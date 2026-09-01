@@ -1,0 +1,33 @@
+# Dependências
+node_modules/
+**/node_modules/
+.bun/
+
+# Segredos / ambiente  (NUNCA commitar)
+.env
+.env.*
+!.env.example
+!.env.prod.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Build / artefatos
+dist/
+build/
+*.tsbuildinfo
+
+# Traefik / certificados
+letsencrypt/
+acme.json
+
+# SO / editor / logs
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Temporários
+*.tmp
+scratchpad/

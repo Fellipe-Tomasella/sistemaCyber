@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Página inicial — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>
+  .ed-field label { font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); font-weight:600; display:block; margin-bottom:5px; }
+  .ed-field input, .ed-field textarea { width:100%; background:var(--surface-0); border:1px solid var(--border-strong); border-radius:9px; padding:9px 11px; color:var(--text); font-family:inherit; font-size:13.5px; outline:none; }
+  .ed-field input:focus, .ed-field textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,119,255,.16); }
+  .thumb { width:100%; height:110px; border-radius:10px; background:#0e1826 center/cover; border:1px solid var(--border-strong); display:grid; place-items:center; color:var(--text-faint); font-size:12px; cursor:pointer; }
+  .item { background:var(--surface-1); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; position:relative; }
+  .item .rm { position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:7px; border:1px solid var(--border-strong); background:rgba(10,13,19,.8); color:var(--danger-soft); cursor:pointer; display:grid; place-items:center; z-index:2; }
+  .grid3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+  .board-photo-ed { width:90px; height:90px; border-radius:50%; margin:0 auto; background:#16273d center/cover; border:2px solid var(--brand); display:grid; place-items:center; cursor:pointer; font-family:var(--font-display); font-size:24px; color:var(--text-brand); }
+  .savebar { position:sticky; bottom:0; background:linear-gradient(transparent, var(--surface-0) 30%); padding:16px 0 4px; display:flex; gap:12px; align-items:center; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero"><div class="hero__row"><div class="stack gap-6"><span class="eyebrow">Personalização do site</span><h1>Página inicial</h1></div>
+      <a class="btn" id="previewBtn" target="_blank"><i class="ph ph-arrow-square-out"></i>Ver o site</a></div></header>
+    <div class="page-body" style="max-width:900px">
+
+      <!-- BANNERS -->
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <div class="row" style="justify-content:space-between"><strong class="panel__title--display">Banners do topo</strong>
+          <button class="btn btn--primary" style="font-size:12px;padding:7px 12px" onclick="HP.banners.push({imageKey:'',link:''}); renderBanners();"><i class="ph ph-plus"></i>Adicionar banner</button></div>
+        <span class="dim" style="font-size:12.5px">Ficam no topo do site. <b>Um só</b> fica fixo; <b>vários</b> giram sozinhos. Tamanho recomendado <b style="color:var(--brand-accent)">1600 × 400 px</b> (proporção 4:1) — mande esse tamanho pra quem for fazer a arte.</span>
+        <div class="grid3" id="bannerList"></div>
+      </div>
+
+      <!-- PARCEIROS -->
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <div class="row" style="justify-content:space-between"><strong class="panel__title--display">Carrossel de parceiros / patrocinadores</strong>
+          <button class="btn btn--primary" style="font-size:12px;padding:7px 12px" onclick="pickImage('parceiro', k=>{ HP.carousel.push({imageKey:k,title:'',link:''}); renderCarousel(); })"><i class="ph ph-plus"></i>Adicionar</button></div>
+        <span class="dim" style="font-size:12.5px">Logos dos parceiros. Tamanho recomendado <b style="color:var(--brand-accent)">400 × 200 px</b> — de preferência PNG com fundo transparente.</span>
+        <div class="grid3" id="carouselList"></div>
+      </div>
+
+      <!-- DIRETORIA -->
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <div class="row" style="justify-content:space-between"><strong class="panel__title--display">Carrossel da diretoria</strong>
+          <button class="btn btn--primary" style="font-size:12px;padding:7px 12px" onclick="HP.board.push({name:'',role:'',photoKey:null}); renderBoard();"><i class="ph ph-plus"></i>Adicionar pessoa</button></div>
+        <div class="grid3" id="boardList"></div>
+      </div>
+
+      <!-- GALERIA -->
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <div class="row" style="justify-content:space-between"><strong class="panel__title--display">Galeria (jogos, eventos, trotes)</strong>
+          <button class="btn btn--primary" style="font-size:12px;padding:7px 12px" onclick="pickImage('galeria', k=>{ HP.gallery.push({imageKey:k,caption:''}); renderGallery(); })"><i class="ph ph-plus"></i>Adicionar imagem</button></div>
+        <div class="grid3" id="galleryList"></div>
+      </div>
+
+      <!-- CONTATO -->
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <strong class="panel__title--display">Rodapé & contato</strong>
+        <div class="ed-field"><label>Sobre a atlética</label><textarea id="c-about" rows="2" oninput="HP.contact.about=this.value"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="ed-field"><label>Instagram (URL)</label><input id="c-insta" oninput="HP.contact.instagram=this.value" placeholder="https://instagram.com/..."></div>
+          <div class="ed-field"><label>WhatsApp (URL)</label><input id="c-wpp" oninput="HP.contact.whatsapp=this.value" placeholder="https://wa.me/55..."></div>
+          <div class="ed-field"><label>E-mail</label><input id="c-email" oninput="HP.contact.email=this.value" placeholder="contato@atletica.com"></div>
+          <div class="ed-field"><label>Localização</label><input id="c-loc" oninput="HP.contact.location=this.value" placeholder="Campus Sinop"></div>
+        </div>
+      </div>
+
+      <div class="savebar">
+        <button class="btn btn--primary" id="saveBtn"><i class="ph ph-check"></i>Salvar página inicial</button>
+        <span class="dim" style="font-size:12.5px">As mudanças aparecem na loja pública ao salvar.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+let HP = { banners:[], carousel:[], board:[], gallery:[], contact:{} };
+
+async function init(){
+  AH.renderRail('config');
+  const slug = (AH.session.workspace && AH.session.workspace.slug) || 'cyber';
+  document.getElementById('previewBtn').href = '/?slug=' + slug;
+  try { const r = await AH.api.get('/homepage'); HP = Object.assign({ banners:[],carousel:[],board:[],gallery:[],contact:{} }, r.homepage); HP.contact = HP.contact||{}; }
+  catch(e){ AH.toast(e.message,'err'); }
+  HP.banners = HP.banners || [];
+  // migra banner único antigo para o array de banners
+  if(!HP.banners.length && HP.bannerKey){ HP.banners=[{imageKey:HP.bannerKey, link:HP.bannerLink||''}]; }
+  HP.bannerKey=null; HP.bannerLink='';
+  const c = HP.contact||{};
+  document.getElementById('c-about').value=c.about||''; document.getElementById('c-insta').value=c.instagram||'';
+  document.getElementById('c-wpp').value=c.whatsapp||''; document.getElementById('c-email').value=c.email||'';
+  document.getElementById('c-loc').value=c.location||'';
+  renderBanners(); renderCarousel(); renderBoard(); renderGallery();
+  document.getElementById('saveBtn').onclick = save;
+}
+
+// Upload genérico: abre file picker, envia, chama cb(key)
+function pickImage(prefix, cb){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return;
+    AH.toast('Enviando…');
+    try{ const up=await AH.upload(f,prefix); cb(up.key); }catch(e){ AH.toast(e.message,'err'); } };
+  inp.click();
+}
+
+function renderBanners(){
+  document.getElementById('bannerList').innerHTML = HP.banners.map((b,i)=>`
+    <div class="item">
+      <button class="rm" onclick="HP.banners.splice(${i},1);renderBanners()"><i class="ph ph-x"></i></button>
+      <div class="thumb" style="height:100px;${b.imageKey?`background-image:url(${AH.fileUrl(b.imageKey)})`:''}" onclick="pickImage('banner',k=>{HP.banners[${i}].imageKey=k;renderBanners()})">${b.imageKey?'':'Enviar · 1600×400'}</div>
+      <div class="ed-field"><label>Link ao clicar (opcional)</label><input value="${AH.escape(b.link||'')}" oninput="HP.banners[${i}].link=this.value" placeholder="https://..."></div>
+    </div>`).join('') || '<span class="dim" style="font-size:12.5px">Nenhum banner. Clique em Adicionar banner.</span>';
+}
+function renderCarousel(){
+  document.getElementById('carouselList').innerHTML = HP.carousel.map((c,i)=>`
+    <div class="item">
+      <button class="rm" onclick="HP.carousel.splice(${i},1);renderCarousel()"><i class="ph ph-x"></i></button>
+      <div class="thumb" style="background-image:url(${AH.fileUrl(c.imageKey)})" onclick="pickImage('parceiro',k=>{HP.carousel[${i}].imageKey=k;renderCarousel()})"></div>
+      <div class="ed-field"><label>Nome</label><input value="${AH.escape(c.title||'')}" oninput="HP.carousel[${i}].title=this.value"></div>
+      <div class="ed-field"><label>Link</label><input value="${AH.escape(c.link||'')}" oninput="HP.carousel[${i}].link=this.value" placeholder="https://..."></div>
+    </div>`).join('') || '<span class="dim" style="font-size:12.5px">Nenhum parceiro. Clique em Adicionar.</span>';
+}
+function renderBoard(){
+  document.getElementById('boardList').innerHTML = HP.board.map((b,i)=>`
+    <div class="item">
+      <button class="rm" onclick="HP.board.splice(${i},1);renderBoard()"><i class="ph ph-x"></i></button>
+      <div class="board-photo-ed" style="${b.photoKey?`background-image:url(${AH.fileUrl(b.photoKey)})`:''}" onclick="pickImage('diretor',k=>{HP.board[${i}].photoKey=k;renderBoard()})">${b.photoKey?'':'<i class="ph ph-camera"></i>'}</div>
+      <div class="ed-field"><label>Nome</label><input value="${AH.escape(b.name||'')}" oninput="HP.board[${i}].name=this.value"></div>
+      <div class="ed-field"><label>Cargo</label><input value="${AH.escape(b.role||'')}" oninput="HP.board[${i}].role=this.value" placeholder="Presidente"></div>
+    </div>`).join('') || '<span class="dim" style="font-size:12.5px">Nenhuma pessoa. Clique em Adicionar.</span>';
+}
+function renderGallery(){
+  document.getElementById('galleryList').innerHTML = HP.gallery.map((g,i)=>`
+    <div class="item">
+      <button class="rm" onclick="HP.gallery.splice(${i},1);renderGallery()"><i class="ph ph-x"></i></button>
+      <div class="thumb" style="background-image:url(${AH.fileUrl(g.imageKey)})" onclick="pickImage('galeria',k=>{HP.gallery[${i}].imageKey=k;renderGallery()})"></div>
+      <div class="ed-field"><label>Legenda</label><input value="${AH.escape(g.caption||'')}" oninput="HP.gallery[${i}].caption=this.value"></div>
+    </div>`).join('') || '<span class="dim" style="font-size:12.5px">Nenhuma imagem. Clique em Adicionar.</span>';
+}
+
+async function save(){
+  const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Salvando…';
+  try{ await AH.api.patch('/homepage', { homepage: HP }); AH.toast('Página inicial salva ✅'); }
+  catch(e){ AH.toast(e.message,'err'); }
+  btn.disabled=false; btn.innerHTML='<i class="ph ph-check"></i>Salvar página inicial';
+}
+window.pickImage=pickImage; window.HP=HP; window.renderBanners=renderBanners; window.renderCarousel=renderCarousel; window.renderBoard=renderBoard; window.renderGallery=renderGallery;
+if(AH.guard('director') && AH.guardModule('loja')) init();
+</script>
+</body>
+</html>

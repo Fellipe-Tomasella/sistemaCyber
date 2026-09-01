@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha conta — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/conta.css">
+</head>
+<body>
+<div class="conta">
+  <div class="conta-top" id="contaTop"></div>
+  <div class="conta-body">
+    <div class="acc-hero"><div class="acc-hero__row">
+      <div class="grow stack gap-10" style="min-width:220px">
+        <span class="eyebrow">Olá, <span id="firstName">—</span> 👋</span>
+        <div id="heroLine"></div>
+      </div>
+      <div class="acc-hero__cta" id="heroCta"></div>
+    </div></div>
+
+    <div class="stack gap-10">
+      <span class="label-cap">Atalhos</span>
+      <div class="shortcuts" id="shortcuts"></div>
+    </div>
+
+    <div class="acc-cards" id="cards"></div>
+  </div>
+  <nav class="conta-bottom" id="contaBottom"></nav>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+const STLBL = { active:['Ativa','pill--success'], overdue:['Vencida','pill--danger'], expired:['Expirada','pill--danger'], pending:['Pendente','pill--warn'], cancelled:['Cancelada','pill--neutral'] };
+const ROLE  = { admin:'Presidência / Admin', finance:'Diretoria Financeira', events:'Diretoria de Eventos', viewer:'Diretoria' };
+
+function heroLine(a, me) {
+  if (a.member) {
+    const status = (me && me.member && me.member.status) || a.member.status || 'pending';
+    const [lbl, cls] = STLBL[status] || STLBL.pending;
+    const msg = status === 'active' ? 'Você está em dia com a atlética 🎉' : 'Regularize sua situação pra aproveitar os benefícios.';
+    return `<div class="row gap-10" style="align-items:center;flex-wrap:wrap"><span class="pill ${cls}" style="padding:6px 12px"><span class="dot"></span>Sócio ${lbl}</span><span class="dim" style="font-size:13px">${msg}</span></div>`;
+  }
+  if (a.director) {
+    const cargo = a.director.cargoLabel || ROLE[a.director.role] || 'Diretoria';
+    return `<div class="row gap-10" style="align-items:center;flex-wrap:wrap"><span class="pill pill--accent" style="padding:6px 12px"><i class="ph-fill ph-shield-star"></i> ${AH.escape(cargo)}</span><span class="dim" style="font-size:13px">Você é da diretoria. Abra o painel de gestão com seu PIN.</span></div>`;
+  }
+  if (a.isSuperAdmin) return `<span class="dim" style="font-size:14px">Administrador oficial da atlética — gerencie usuários e cargos.</span>`;
+  return `<span class="dim" style="font-size:14px">Aqui ficam suas compras, ingressos e — quando virar sócio — sua carteirinha.</span>`;
+}
+
+function heroCta(a) {
+  if (a.director) return `<button class="btn btn--primary btn--conta" id="ctaPanel"><i class="ph-fill ph-lock-key-open"></i> Abrir painel</button>`;
+  if (a.isSuperAdmin) return `<a class="btn btn--primary btn--conta" href="/gestao"><i class="ph ph-user-gear"></i> Gerenciar usuários</a>`;
+  if (a.member) return `<a class="btn btn--primary btn--conta" href="/socio/carteirinha"><i class="ph-fill ph-identification-badge"></i> Minha carteirinha</a>`;
+  return `<a class="btn btn--primary btn--conta" href="/seja-socio"><i class="ph-fill ph-identification-badge"></i> Quero ser sócio</a>`;
+}
+
+function eventoCard(store) {
+  const ev = store && store.events && store.events[0];
+  if (!ev || !ev.batches || !ev.batches.length) {
+    return `<div class="acc-feature"><span class="label-cap">Próximo evento</span><strong style="font-size:16px">Nenhum evento à venda</strong><span class="dim" style="font-size:13px">Fique de olho — em breve tem festa.</span><a class="btn btn--conta" href="/eventos" style="border-color:#2a5c8a;align-self:flex-start"><i class="ph ph-confetti"></i> Ver eventos</a></div>`;
+  }
+  const b = ev.batches[0], dt = ev.eventDate ? new Date(ev.eventDate) : null;
+  return `<div class="acc-feature"><span class="label-cap">Próximo evento</span>
+    <strong style="font-size:17px">${AH.escape(ev.name)}</strong>
+    <span class="dim" style="font-size:12.5px">${dt ? dt.toLocaleString('pt-BR') : ''} ${AH.escape(ev.location || '')}</span>
+    <div class="row gap-10" style="align-items:baseline"><span class="display" style="font-size:24px">${AH.fmtBRL(b.priceCents)}</span>${b.memberPriceCents ? `<span class="pill pill--accent">sócio ${AH.fmtBRL(b.memberPriceCents)}</span>` : ''}</div>
+    <a class="btn btn--primary btn--conta" href="/eventos" style="align-self:flex-start"><i class="ph-fill ph-ticket"></i> Garantir ingresso</a></div>`;
+}
+
+function pagamentosCard(pays) {
+  const rows = (pays && pays.payments && pays.payments.length)
+    ? pays.payments.slice(0, 4).map(p => `<div class="pay-row"><i class="ph ${p.status==='paid'?'ph-check-circle':'ph-clock'}" style="color:${p.status==='paid'?'var(--success)':'var(--warn)'};font-size:17px"></i><span class="grow">${AH.fmtBRL(p.amountCents)}</span><span class="dim">${AH.fmtDate(p.dueDate)}</span></div>`).join('')
+    : '<span class="dim" style="font-size:12.5px">Nenhum pagamento ainda.</span>';
+  return `<div class="acc-panel"><div class="row" style="justify-content:space-between"><span class="label-cap">Últimos pagamentos</span><a href="/socio/pagamentos" style="font-size:12px">ver tudo →</a></div>${rows}</div>`;
+}
+
+function socioCTACard() {
+  return `<div class="acc-panel"><span class="label-cap">Plano de sócio</span><strong style="font-size:16px">Vire sócio e pague menos</strong><span class="dim" style="font-size:13px;line-height:1.5">Carteirinha digital, ingresso no lote sócio e desconto na loja.</span><a class="btn btn--primary btn--conta" href="/seja-socio" style="align-self:flex-start"><i class="ph-fill ph-identification-badge"></i> Quero ser sócio</a></div>`;
+}
+
+function superCard() {
+  return `<div class="manage-card"><i class="ph-fill ph-users-three big"></i><div class="stack gap-4"><strong style="font-size:16px">Gestão de usuários</strong><span class="dim" style="font-size:13px">Crie cargos, defina os módulos de cada um e gerencie as pessoas.</span></div><a class="btn btn--primary btn--conta" href="/gestao" style="align-self:flex-start"><i class="ph ph-user-gear"></i> Abrir gestão</a></div>`;
+}
+
+function comprasCard(orders) {
+  if (!orders || !orders.length) return '';
+  return `<div class="acc-panel"><div class="row" style="justify-content:space-between"><span class="label-cap">Minhas compras</span><a href="/socio/compras" style="font-size:12px">ver tudo →</a></div>
+    <div class="stack gap-8">${orders.slice(0, 3).map(o => `<a class="row gap-8" href="/socio/compras" style="font-size:12.5px;text-decoration:none;color:var(--text);align-items:center"><span class="grow">Pedido #${o.orderNumber}</span><span class="pill ${o.paymentStatus === 'paid' ? 'pill--success' : 'pill--warn'}" style="font-size:10px;padding:3px 8px">${o.paymentStatus === 'paid' ? 'pago' : 'pendente'}</span><span class="dim">${AH.fmtBRL(o.totalCents)}</span></a>`).join('')}</div></div>`;
+}
+
+function produtosCard(store) {
+  const ps = ((store && store.products) || []).slice(0, 3);
+  if (!ps.length) return '';
+  return `<div class="acc-panel"><div class="row" style="justify-content:space-between"><span class="label-cap">Destaques da loja</span><a href="/loja" style="font-size:12px">ver tudo →</a></div>
+    <div class="stack gap-10">${ps.map(p => `<a class="row gap-10" href="/loja" style="align-items:center;text-decoration:none;color:var(--text)"><div style="width:42px;height:42px;border-radius:9px;flex:none;border:1px solid var(--border);background:#0e1826 center/cover${p.imageKey ? ` url(${AH.fileUrl(p.imageKey)})` : ''}"></div><span class="grow" style="font-size:13.5px">${AH.escape(p.name)}</span><span class="num" style="font-size:14px;font-weight:600">${AH.fmtBRL(p.memberPriceCents ?? p.basePriceCents)}</span></a>`).join('')}</div></div>`;
+}
+
+function contatoCard(store) {
+  const c = (store && store.homepage && store.homepage.contact) || {};
+  const links = [];
+  if (c.instagram) links.push(`<a class="row gap-8" href="${AH.escape(c.instagram)}" target="_blank" rel="noopener"><i class="ph ph-instagram-logo" style="font-size:17px"></i>Instagram</a>`);
+  if (c.whatsapp) links.push(`<a class="row gap-8" href="${AH.escape(c.whatsapp)}" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo" style="font-size:17px"></i>WhatsApp</a>`);
+  if (c.email) links.push(`<a class="row gap-8" href="mailto:${AH.escape(c.email)}"><i class="ph ph-envelope-simple" style="font-size:17px"></i>${AH.escape(c.email)}</a>`);
+  if (!links.length) return '';
+  return `<div class="acc-panel"><span class="label-cap">Fale com a atlética</span><div class="stack gap-8" style="font-size:13px">${links.join('')}</div></div>`;
+}
+
+(async function () {
+  const a = AH.conta.init('home');
+  if (!a) return;
+  document.getElementById('firstName').textContent = (a.name || 'você').split(' ')[0];
+
+  let store = null, me = null, pays = null, orders = null;
+  try { store = await AH.api.get('/store/' + AH.session.slug, { auth: false }); } catch {}
+  try { const od = await AH.api.get('/account/orders'); orders = od.orders; } catch {}
+  if (a.member) { try { [me, pays] = await Promise.all([AH.api.get('/me'), AH.api.get('/me/payments')]); } catch {} }
+
+  // hero
+  document.getElementById('heroLine').innerHTML = heroLine(a, me);
+  document.getElementById('heroCta').innerHTML = heroCta(a);
+  const cp = document.getElementById('ctaPanel'); if (cp) cp.onclick = AH.conta.openPanel;
+
+  // atalhos
+  const sc = [];
+  if (a.member || a.director) sc.push(['Carteirinha', '/socio/carteirinha', 'ph-identification-badge']);
+  sc.push(['Loja', '/loja', 'ph-t-shirt']);
+  sc.push(['Eventos', '/eventos', 'ph-confetti']);
+  if (a.member) sc.push(['Pagamentos', '/socio/pagamentos', 'ph-receipt']);
+  document.getElementById('shortcuts').innerHTML = sc.map(([l, h, i]) => `<a class="shortcut" href="${h}"><i class="ph ${i}"></i><span>${l}</span></a>`).join('');
+
+  // cards que preenchem
+  const cards = [];
+  if (a.isSuperAdmin) cards.push(superCard());
+  cards.push(eventoCard(store));
+  const compras = comprasCard(orders); if (compras) cards.push(compras);
+  if (a.member) cards.push(pagamentosCard(pays));
+  else if (!a.director && !a.isSuperAdmin) cards.push(socioCTACard());
+  const prod = produtosCard(store); if (prod) cards.push(prod);
+  const contato = contatoCard(store); if (contato) cards.push(contato);
+  document.getElementById('cards').innerHTML = cards.join('');
+})();
+</script>
+</body>
+</html>

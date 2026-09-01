@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #0a0c11; color: #e9e9ed; font-family: "Inter", system-ui, sans-serif; font-size: 15px; line-height: 1.55; }
+  *, *::before, *::after { box-sizing: border-box; }
+  a { color: #7ab4ff; text-decoration: none; }
+  a:hover { color: #b4d3ff; }
+  :focus-visible { outline: 2px solid #0077ff; outline-offset: 2px; }
+  ::selection { background: rgba(0,119,255,0.32); }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 40px; display: flex; flex-direction: column; gap: 30px">
+  <div style="display: flex; align-items: center; gap: 16px">
+    <h2 style="flex: none; white-space: nowrap; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: 0.01em; text-transform: uppercase; margin: 0">Turno 3 — Arena</h2>
+    <span style="font-size: 13px; color: #8fa3bb">Sócios com painel de detalhe, carteirinha digital e login da diretoria. Mesma linguagem de <a href="#1b">1b</a>.</span>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+
+    <!-- 3a — SÓCIOS -->
+    <div id="3a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">3A</span>
+        <strong style="font-size: 17px; font-weight: 600">Sócios — lista + detalhe</strong>
+        <span style="font-size: 13px; color: #8fa3bb">Desktop 1440</span>
+      </div>
+
+      <div style="width: 1440px; height: 980px; display: flex; background: #0d1117; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #123f7d, 0 24px 60px rgba(0,0,0,0.6)">
+        <aside style="width: 76px; flex: none; background: #0a0d13; border-right: 1px solid #1b2534; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px">
+          <div style="width: 44px; height: 44px; flex: none; border-radius: 12px; background: #0a0d13; overflow: hidden; box-shadow: 0 0 22px rgba(0,191,255,0.45); margin-bottom: 12px">
+            <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+          </div>
+          <div style="width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; background: rgba(0,191,255,0.14); color: #00bfff; position: relative">
+            <span style="position: absolute; left: -15px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: #00bfff; box-shadow: 0 0 10px #00bfff"></span>
+            <i class="ph-fill ph-users-three" style="font-size: 21px"></i>
+          </div>
+          <sc-for list="{{ navSoc }}" as="item" hint-placeholder-count="11">
+            <div title="{{ item.label }}" style="width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #6b7c92" style-hover="background: #121a26; color: #00bfff">
+              <i class="ph {{ item.icon }}" style="font-size: 20px"></i>
+            </div>
+          </sc-for>
+          <div style="margin-top: auto; width: 34px; height: 34px; border-radius: 50%; background: #16273d; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #7ab4ff">RM</div>
+        </aside>
+
+        <div style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+          <div style="position: relative; overflow: hidden; padding: 22px 28px 18px; background: linear-gradient(115deg, #0b1c33 0%, #0d1117 62%); border-bottom: 1px solid #1b2534">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.09) 0 2px, transparent 2px 34px)"></div>
+            <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #00bfff; font-weight: 600">486 cadastros · 2º semestre 2026</span>
+                <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Sócios</h1>
+              </div>
+              <div style="display: flex; gap: 9px; flex: none">
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; border: 1px solid #2a3d55; background: rgba(255,255,255,0.04); color: #cfd9e5; font-family: inherit; font-size: 13px; cursor: pointer" style-hover="border-color: #00bfff; color: #ffffff"><i class="ph ph-paper-plane-tilt" style="font-size: 16px"></i>Cobrar em massa</button>
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; border: 1px solid #2a3d55; background: rgba(255,255,255,0.04); color: #cfd9e5; font-family: inherit; font-size: 13px; cursor: pointer" style-hover="border-color: #00bfff; color: #ffffff"><i class="ph ph-export" style="font-size: 16px"></i>Exportar</button>
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 10px; border: none; background: #0077ff; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(0,119,255,0.4)" style-hover="background: #00bfff; color: #06121f"><i class="ph ph-user-plus" style="font-size: 16px"></i>Novo sócio</button>
+              </div>
+            </div>
+            <div style="position: relative; margin-top: 16px; display: flex; align-items: center; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 9px; padding: 9px 13px; border-radius: 10px; border: 1px solid #24374f; background: rgba(10,13,19,0.5); color: #6b7c92; font-size: 13px; width: 290px">
+                <i class="ph ph-magnifying-glass" style="font-size: 16px"></i>Buscar por nome, CPF ou matrícula
+              </div>
+              <sc-for list="{{ chips }}" as="c" hint-placeholder-count="4">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid #24374f; background: rgba(10,13,19,0.5); font-size: 12.5px; color: #a9bacd" style-hover="border-color: #00bfff; color: #ffffff">
+                  {{ c.label }}<span style="font-variant-numeric: tabular-nums; color: #6b7c92">{{ c.n }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex: 1; display: grid; grid-template-columns: 1fr 396px; min-height: 0">
+            <div style="display: flex; flex-direction: column; min-height: 0; overflow: hidden">
+              <div style="display: grid; grid-template-columns: 1fr 210px 106px 124px 106px; gap: 14px; padding: 10px 24px; background: #0f151e; border-bottom: 1px solid #1b2534; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92; font-weight: 600">
+                <span>Sócio</span><span>Curso</span><span>Plano</span><span>Status</span><span style="text-align: right">Vencimento</span>
+              </div>
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+                <sc-for list="{{ socios }}" as="s" hint-placeholder-count="12">
+                  <div style="position: relative; display: grid; grid-template-columns: 1fr 210px 106px 124px 106px; gap: 14px; align-items: center; padding: 12px 24px; border-bottom: 1px solid #161e29; font-size: 13px; background: {{ s.rowBg }}" style-hover="background: #16202d">
+                    <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: {{ s.rowMark }}"></span>
+                    <span style="display: flex; align-items: center; gap: 11px; min-width: 0">
+                      <span style="width: 32px; height: 32px; flex: none; border-radius: 50%; background: #16273d; display: grid; place-items: center; font-size: 11.5px; font-weight: 600; color: #7ab4ff">{{ s.ini }}</span>
+                      <span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ s.nome }}</span>
+                    </span>
+                    <span style="font-size: 12px; color: #8fa3bb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ s.curso }}</span>
+                    <span style="justify-self: start; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; background: {{ s.planoBg }}; color: {{ s.planoFg }}">{{ s.plano }}</span>
+                    <span style="justify-self: start; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; background: {{ s.stBg }}; color: {{ s.stFg }}">{{ s.status }}</span>
+                    <span style="text-align: right; font-size: 12.5px; font-variant-numeric: tabular-nums; color: {{ s.venColor }}">{{ s.ven }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="border-left: 1px solid #1b2534; background: #0f151e; display: flex; flex-direction: column; min-height: 0; overflow: hidden">
+              <div style="position: relative; overflow: hidden; padding: 20px; border-bottom: 1px solid #1b2534; background: linear-gradient(140deg, rgba(0,119,255,0.18), transparent)">
+                <div style="display: flex; align-items: center; gap: 13px">
+                  <div style="width: 54px; height: 54px; flex: none; border-radius: 14px; background: #16273d; display: grid; place-items: center; font-family: 'Anton', sans-serif; font-size: 19px; color: #7ab4ff">MA</div>
+                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                    <strong style="font-size: 17px; font-weight: 600">Marina Alves de Souza</strong>
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; background: rgba(74,222,128,0.16); color: #86efac">Em dia</span>
+                      <span style="font-size: 12px; color: #6b7c92">nº 0148</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px">
+                  <button style="flex: 1; padding: 10px; border-radius: 10px; border: none; background: #0077ff; color: #fff; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer" style-hover="background: #00bfff; color: #06121f">Carteirinha</button>
+                  <button style="flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #2a3d55; background: transparent; color: #cfd9e5; font-family: inherit; font-size: 12.5px; cursor: pointer" style-hover="border-color: #00bfff; color: #fff">Cobrança</button>
+                  <button style="flex: none; width: 40px; display: grid; place-items: center; border-radius: 10px; border: 1px solid #2a3d55; background: transparent; color: #a9bacd; cursor: pointer" style-hover="border-color: #00bfff; color: #fff"><i class="ph ph-dots-three" style="font-size: 18px"></i></button>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 20px; padding: 0 20px; border-bottom: 1px solid #1b2534; font-size: 13px">
+                <span style="padding: 12px 0; color: #00bfff; font-weight: 600; box-shadow: inset 0 -2px 0 #00bfff">Dados</span>
+                <span style="padding: 12px 0; color: #6b7c92">Cobranças</span>
+                <span style="padding: 12px 0; color: #6b7c92">Pedidos</span>
+              </div>
+
+              <div style="flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 18px; overflow: hidden">
+                <div style="display: flex; flex-direction: column; gap: 11px">
+                  <sc-for list="{{ dados }}" as="d" hint-placeholder-count="6">
+                    <div style="display: flex; flex-direction: column; gap: 2px">
+                      <span style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92; font-weight: 600">{{ d.k }}</span>
+                      <span style="font-size: 13.5px; color: #e9e9ed">{{ d.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 11px">
+                  <span style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7c92; font-weight: 600">Histórico</span>
+                  <sc-for list="{{ historico }}" as="h" hint-placeholder-count="4">
+                    <div style="display: flex; gap: 11px">
+                      <span style="width: 8px; height: 8px; flex: none; margin-top: 6px; border-radius: 50%; background: {{ h.c }}"></span>
+                      <div style="display: flex; flex-direction: column; line-height: 1.35">
+                        <span style="font-size: 13px; font-weight: 500">{{ h.t }}</span>
+                        <span style="font-size: 11.5px; color: #6b7c92">{{ h.d }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3b + 3c -->
+    <div style="display: flex; gap: 48px; align-items: flex-start">
+
+      <div id="3b" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">3B</span>
+          <strong style="font-size: 17px; font-weight: 600">Carteirinha digital</strong>
+          <span style="font-size: 13px; color: #8fa3bb">Mobile 390</span>
+        </div>
+
+        <div style="width: 390px; height: 844px; border-radius: 34px; overflow: hidden; background: #0d1117; box-shadow: 0 0 0 1px #24374f, 0 24px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 6px; font-size: 12px; color: #8fa3bb">
+            <span style="font-weight: 600">9:41</span>
+            <span style="display: flex; gap: 5px"><i class="ph-fill ph-cell-signal-full" style="font-size: 13px"></i><i class="ph-fill ph-wifi-high" style="font-size: 13px"></i><i class="ph-fill ph-battery-high" style="font-size: 13px"></i></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 18px 4px">
+            <i class="ph ph-caret-left" style="font-size: 20px; color: #a9bacd"></i>
+            <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase">Minha carteirinha</strong>
+            <i class="ph ph-share-network" style="margin-left: auto; font-size: 19px; color: #a9bacd"></i>
+          </div>
+
+          <div style="flex: 1; padding: 12px 18px 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+            <div style="position: relative; overflow: hidden; border-radius: 20px; padding: 18px; background: radial-gradient(130% 120% at 80% 0%, #10406e 0%, #0b1a2c 52%, #0a0d13 100%); border: 1px solid #17456f; box-shadow: 0 0 40px rgba(0,119,255,0.2)">
+              <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.08) 0 2px, transparent 2px 32px)"></div>
+              <img src="assets/brasao-cyber.jpeg" alt="" style="position: absolute; right: -34px; bottom: -30px; height: 190px; width: auto; mix-blend-mode: lighten; opacity: 0.34">
+              <div style="position: relative; display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <div style="width: 34px; height: 34px; flex: none; border-radius: 9px; background: #0a0d13; overflow: hidden">
+                    <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+                  </div>
+                  <div style="display: flex; flex-direction: column; line-height: 1.15">
+                    <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase">A.A.A.S.I. Cyber</strong>
+                    <span style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #7fdcff">Sócio 2º/2026</span>
+                  </div>
+                  <span style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; background: rgba(74,222,128,0.18); color: #86efac">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ade80"></span>Ativa
+                  </span>
+                </div>
+
+                <div style="display: flex; align-items: flex-end; gap: 14px">
+                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+                    <div style="display: flex; flex-direction: column; line-height: 1.05">
+                      <span style="font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #8fa3bb">Sócia</span>
+                      <span style="font-family: 'Anton', sans-serif; font-size: 27px; letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.02">Marina<br>Alves</span>
+                    </div>
+                    <div style="display: flex; gap: 16px">
+                      <div style="display: flex; flex-direction: column; line-height: 1.2">
+                        <span style="font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb">Matrícula</span>
+                        <span style="font-size: 12.5px; font-variant-numeric: tabular-nums">2023104857</span>
+                      </div>
+                      <div style="display: flex; flex-direction: column; line-height: 1.2">
+                        <span style="font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb">Nº sócio</span>
+                        <span style="font-size: 12.5px; font-variant-numeric: tabular-nums">0148</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="flex: none; padding: 8px; border-radius: 12px; background: #f4f7fb">
+                    <div style="width: 92px; height: 92px; display: grid; grid-template-columns: repeat(21, 1fr); grid-template-rows: repeat(21, 1fr)">
+                      <sc-for list="{{ qrCells }}" as="q" hint-placeholder-count="441">
+                        <span style="background: {{ q.bg }}"></span>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.12)">
+                  <div style="display: flex; flex-direction: column; line-height: 1.2">
+                    <span style="font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb">Válida até</span>
+                    <span style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums">12/12/2026</span>
+                  </div>
+                  <span style="margin-left: auto; font-size: 11px; color: #7fdcff">Código atualiza a cada 30s</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px">
+              <button style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 12px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 22px rgba(0,119,255,0.4)" style-hover="background: #00bfff; color: #06121f"><i class="ph-fill ph-wallet" style="font-size: 18px"></i>Adicionar à Wallet</button>
+              <button style="flex: none; width: 50px; display: grid; place-items: center; border-radius: 12px; border: 1px solid #2a3d55; background: transparent; color: #a9bacd; cursor: pointer" style-hover="border-color: #00bfff; color: #fff"><i class="ph ph-arrows-clockwise" style="font-size: 19px"></i></button>
+            </div>
+
+            <div style="padding: 14px 16px; border-radius: 14px; background: #121822; border: 1px solid #1b2534; display: flex; flex-direction: column; gap: 12px">
+              <span style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7c92; font-weight: 600">Seus benefícios agora</span>
+              <sc-for list="{{ cartBenef }}" as="b" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 11px">
+                  <span style="width: 32px; height: 32px; flex: none; border-radius: 9px; background: rgba(0,119,255,0.14); display: grid; place-items: center; color: #00bfff"><i class="ph {{ b.icon }}" style="font-size: 17px"></i></span>
+                  <span style="font-size: 13.5px">{{ b.t }}</span>
+                  <i class="ph ph-check-circle" style="margin-left: auto; font-size: 17px; color: #4ade80"></i>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 14px; background: linear-gradient(115deg, rgba(0,119,255,0.18), #121822); border: 1px solid #24374f">
+              <i class="ph-fill ph-ticket" style="font-size: 22px; color: #00bfff"></i>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3">
+                <span style="font-size: 13px; font-weight: 600">Cyber Night · 29/08</span>
+                <span style="font-size: 11.5px; color: #8fa3bb">Seu lote de sócio: R$ 25</span>
+              </div>
+              <button style="padding: 9px 14px; border-radius: 10px; border: none; background: #0077ff; color: #fff; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Comprar</button>
+            </div>
+          </div>
+
+          <div style="display: flex; padding: 9px 10px 16px; border-top: 1px solid #1b2534; background: rgba(10,13,19,0.94)">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-house" style="font-size: 21px"></i><span style="font-size: 10px">Início</span></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-confetti" style="font-size: 21px"></i><span style="font-size: 10px">Eventos</span></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-t-shirt" style="font-size: 21px"></i><span style="font-size: 10px">Loja</span></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #00bfff"><i class="ph-fill ph-identification-badge" style="font-size: 21px"></i><span style="font-size: 10px; font-weight: 600">Sócio</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="3c" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">3C</span>
+          <strong style="font-size: 17px; font-weight: 600">Login da diretoria</strong>
+          <span style="font-size: 13px; color: #8fa3bb">Desktop 1280 · brasão inteiro</span>
+        </div>
+
+        <div style="width: 1000px; height: 844px; display: flex; background: #0d1117; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #123f7d, 0 24px 60px rgba(0,0,0,0.6)">
+          <div style="position: relative; overflow: hidden; width: 520px; flex: none; padding: 44px 40px; display: flex; flex-direction: column; background: radial-gradient(125% 115% at 75% 12%, #10406e 0%, #0b1a2c 48%, #0a0d13 100%)">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.08) 0 2px, transparent 2px 38px)"></div>
+            <div style="position: relative; display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 11.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #00bfff; font-weight: 600">AtléticaHub</span>
+              <h2 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 42px; line-height: 0.98; letter-spacing: 0.01em; text-transform: uppercase; margin: 0">Gestão<br>da atlética<br>num só lugar</h2>
+            </div>
+            <img src="assets/brasao-cyber.jpeg" alt="Brasão A.A.A.S.I. Cyber" style="position: relative; margin: 18px auto; height: 330px; width: auto; mix-blend-mode: lighten; filter: drop-shadow(0 0 60px rgba(0,191,255,0.4))">
+            <div style="position: relative; margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 15px; color: #cfd9e5; text-wrap: pretty">“A gente controlava tudo em três planilhas. Agora fecha o caixa da festa no mesmo dia.”</span>
+              <span style="font-size: 12.5px; color: #7fdcff">Rafael Moura · presidente, gestão 25/26</span>
+            </div>
+          </div>
+
+          <div style="flex: 1; padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; gap: 22px; min-width: 0">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Entrar</h1>
+              <span style="font-size: 13.5px; color: #8fa3bb">Acesso da diretoria da A.A.A.S.I. Cyber</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">E-mail institucional</span>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 11px; border: 1px solid #24374f; background: #121822; font-size: 14px; color: #e9e9ed">
+                  <i class="ph ph-envelope-simple" style="font-size: 18px; color: #6b7c92"></i>rafael.moura@unemat.br
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">Senha</span>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 11px; border: 1px solid #0077ff; background: #121822; font-size: 14px; color: #e9e9ed; box-shadow: 0 0 0 3px rgba(0,119,255,0.16)">
+                  <i class="ph ph-lock-simple" style="font-size: 18px; color: #00bfff"></i>••••••••••••
+                  <i class="ph ph-eye" style="margin-left: auto; font-size: 18px; color: #6b7c92"></i>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #a9bacd">
+                <span style="width: 18px; height: 18px; border-radius: 5px; border: 1px solid #0077ff; background: #0077ff; display: grid; place-items: center; color: #fff"><i class="ph-fill ph-check" style="font-size: 12px"></i></span>
+                Manter conectado
+                <a href="#3c" style="margin-left: auto; font-size: 13px">Esqueci a senha</a>
+              </div>
+            </div>
+
+            <button style="width: 100%; padding: 15px; border-radius: 12px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 19px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 28px rgba(0,119,255,0.42)" style-hover="background: #00bfff; color: #06121f">Entrar no painel</button>
+
+            <div style="display: flex; align-items: center; gap: 12px; color: #24374f">
+              <span style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #24374f, transparent)"></span>
+              <span style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92">ou</span>
+              <span style="flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #24374f, transparent)"></span>
+            </div>
+
+            <button style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px; border-radius: 12px; border: 1px solid #2a3d55; background: transparent; color: #cfd9e5; font-family: inherit; font-size: 14px; cursor: pointer" style-hover="border-color: #00bfff; color: #fff"><i class="ph ph-google-logo" style="font-size: 19px"></i>Entrar com Google</button>
+
+            <div style="display: flex; align-items: center; gap: 10px; padding: 13px 15px; border-radius: 12px; background: #121822; border: 1px solid #1b2534">
+              <i class="ph ph-storefront" style="font-size: 20px; color: #00bfff"></i>
+              <span style="flex: 1; font-size: 13px; color: #a9bacd">É sócio ou quer comprar ingresso?</span>
+              <a href="#2c" style="font-size: 13px; font-weight: 600">Ir para a loja</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section style="padding: 56px 56px 110px; display: flex; flex-direction: column; gap: 30px">
+  <div style="display: flex; align-items: center; gap: 16px">
+    <h2 style="flex: none; white-space: nowrap; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: 0.01em; text-transform: uppercase; margin: 0">Turno 2 — Arena</h2>
+    <span style="font-size: 13px; color: #8fa3bb">Financeiro, Retirada e Loja pública na linguagem do <a href="#1b">1b</a>. Brasão inteiro nas telas de marca, recorte da cabeça na navegação.</span>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+
+    <!-- ═══════ 2a — FINANCEIRO ═══════ -->
+    <div id="2a" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">2A</span>
+        <strong style="font-size: 17px; font-weight: 600">Financeiro — Caixa &amp; DRE</strong>
+        <span style="font-size: 13px; color: #8fa3bb">Desktop 1440</span>
+      </div>
+
+      <div style="width: 1440px; height: 980px; display: flex; background: #0d1117; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #123f7d, 0 24px 60px rgba(0,0,0,0.6)">
+        <aside style="width: 76px; flex: none; background: #0a0d13; border-right: 1px solid #1b2534; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px">
+          <div style="width: 44px; height: 44px; flex: none; border-radius: 12px; background: #0a0d13; overflow: hidden; box-shadow: 0 0 22px rgba(0,191,255,0.45); margin-bottom: 12px">
+            <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+          </div>
+          <sc-for list="{{ navFin }}" as="item" hint-placeholder-count="12">
+            <div title="{{ item.label }}" style="width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #6b7c92" style-hover="background: #121a26; color: #00bfff">
+              <i class="ph {{ item.icon }}" style="font-size: 20px"></i>
+            </div>
+          </sc-for>
+          <div style="width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; background: rgba(0,191,255,0.14); color: #00bfff; position: relative">
+            <span style="position: absolute; left: -15px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: #00bfff; box-shadow: 0 0 10px #00bfff"></span>
+            <i class="ph-fill ph-chart-line-up" style="font-size: 21px"></i>
+          </div>
+          <div style="margin-top: auto; width: 34px; height: 34px; border-radius: 50%; background: #16273d; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #7ab4ff">RM</div>
+        </aside>
+
+        <div style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+          <div style="position: relative; overflow: hidden; padding: 22px 28px 20px; background: linear-gradient(115deg, #0b1c33 0%, #0d1117 62%); border-bottom: 1px solid #1b2534">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.09) 0 2px, transparent 2px 34px)"></div>
+            <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #00bfff; font-weight: 600">Financeiro · 2º semestre 2026</span>
+                <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Caixa e DRE</h1>
+              </div>
+              <div style="display: flex; gap: 9px; flex: none">
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; border: 1px solid #2a3d55; background: rgba(255,255,255,0.04); color: #cfd9e5; font-family: inherit; font-size: 13px; cursor: pointer" style-hover="border-color: #00bfff; color: #ffffff"><i class="ph ph-funnel" style="font-size: 16px"></i>Centro de custo</button>
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: 10px; border: 1px solid #2a3d55; background: rgba(255,255,255,0.04); color: #cfd9e5; font-family: inherit; font-size: 13px; cursor: pointer" style-hover="border-color: #00bfff; color: #ffffff"><i class="ph ph-export" style="font-size: 16px"></i>Exportar</button>
+                <button style="display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 10px; border: none; background: #0077ff; color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 20px rgba(0,119,255,0.4)" style-hover="background: #00bfff; color: #06121f"><i class="ph ph-plus" style="font-size: 16px"></i>Lançamento</button>
+              </div>
+            </div>
+            <div style="position: relative; margin-top: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; overflow: hidden">
+              <div style="padding: 14px 18px; background: linear-gradient(150deg, rgba(0,119,255,0.3), rgba(0,119,255,0.06)); display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #b4d3ff; font-weight: 600">Saldo em caixa</span>
+                <span style="font-family: 'Anton', sans-serif; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; color: #ffffff">R$ 61.320</span>
+              </div>
+              <div style="padding: 14px 18px; background: rgba(13,17,23,0.6); display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">Entradas · agosto</span>
+                <span style="font-family: 'Anton', sans-serif; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; color: #4ade80">R$ 24.850</span>
+              </div>
+              <div style="padding: 14px 18px; background: rgba(13,17,23,0.6); display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">Saídas · agosto</span>
+                <span style="font-family: 'Anton', sans-serif; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; color: #f87171">R$ 12.100</span>
+              </div>
+              <div style="padding: 14px 18px; background: rgba(13,17,23,0.6); display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">Resultado</span>
+                <span style="font-family: 'Anton', sans-serif; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums">+R$ 12.750</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex: 1; padding: 20px 28px 24px; display: grid; grid-template-columns: 1fr 372px; gap: 18px; min-height: 0">
+            <div style="border-radius: 14px; background: #121822; border: 1px solid #1b2534; display: flex; flex-direction: column; overflow: hidden; min-height: 0">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 15px 18px; border-bottom: 1px solid #1b2534">
+                <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase">Lançamentos</strong>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 9px; border: 1px solid #24374f; color: #6b7c92; font-size: 12.5px; width: 210px">
+                  <i class="ph ph-magnifying-glass" style="font-size: 15px"></i>Buscar descrição…
+                </div>
+                <span style="font-size: 12px; color: #6b7c92">48 registros</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 66px 1fr 140px 100px 118px 40px; gap: 12px; padding: 9px 18px; background: #0f151e; border-bottom: 1px solid #1b2534; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92; font-weight: 600">
+                <span>Data</span><span>Descrição</span><span>Centro de custo</span><span>Tipo</span><span style="text-align: right">Valor</span><span></span>
+              </div>
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+                <sc-for list="{{ lancamentos }}" as="l" hint-placeholder-count="11">
+                  <div style="display: grid; grid-template-columns: 66px 1fr 140px 100px 118px 40px; gap: 12px; align-items: center; padding: 11px 18px; border-bottom: 1px solid #161e29; font-size: 13px" style-hover="background: #16202d">
+                    <span style="color: #6b7c92; font-variant-numeric: tabular-nums">{{ l.data }}</span>
+                    <span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ l.desc }}</span>
+                    <span style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #a9bacd; overflow: hidden">
+                      <span style="width: 8px; height: 8px; flex: none; border-radius: 2px; background: {{ l.ccColor }}"></span>
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ l.cc }}</span>
+                    </span>
+                    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; justify-self: start; background: {{ l.tipoBg }}; color: {{ l.tipoFg }}">{{ l.tipo }}</span>
+                    <span style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: {{ l.valColor }}">{{ l.valor }}</span>
+                    <span style="display: grid; place-items: center; color: {{ l.compColor }}"><i class="ph {{ l.compIcon }}" style="font-size: 17px"></i></span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+              <div style="padding: 16px 18px; border-radius: 14px; background: #121822; border: 1px solid #1b2534; display: flex; flex-direction: column; gap: 12px">
+                <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 18px; letter-spacing: 0.03em; text-transform: uppercase">DRE simplificado</strong>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <span style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #4ade80; font-weight: 600">Receitas</span>
+                  <sc-for list="{{ dreRec }}" as="r" hint-placeholder-count="4">
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px">
+                      <span style="color: #a9bacd">{{ r.label }}</span>
+                      <span style="flex: 1; height: 1px; background: #1b2534"></span>
+                      <span style="font-variant-numeric: tabular-nums; font-weight: 600">{{ r.val }}</span>
+                    </div>
+                  </sc-for>
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 7px; border-top: 1px solid #1b2534; font-size: 13px; font-weight: 600">
+                    <span>Total de receitas</span><span style="color: #4ade80; font-variant-numeric: tabular-nums">R$ 24.850</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <span style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #f87171; font-weight: 600">Despesas</span>
+                  <sc-for list="{{ dreDesp }}" as="r" hint-placeholder-count="4">
+                    <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px">
+                      <span style="color: #a9bacd">{{ r.label }}</span>
+                      <span style="flex: 1; height: 1px; background: #1b2534"></span>
+                      <span style="font-variant-numeric: tabular-nums; font-weight: 600">{{ r.val }}</span>
+                    </div>
+                  </sc-for>
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 7px; border-top: 1px solid #1b2534; font-size: 13px; font-weight: 600">
+                    <span>Total de despesas</span><span style="color: #f87171; font-variant-numeric: tabular-nums">R$ 12.100</span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: linear-gradient(120deg, rgba(0,119,255,0.24), rgba(0,119,255,0.05)); border: 1px solid #17456f">
+                  <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #b4d3ff; font-weight: 600">Resultado</span>
+                  <span style="font-family: 'Anton', sans-serif; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; color: #ffffff">+R$ 12.750</span>
+                </div>
+              </div>
+
+              <div style="padding: 16px 18px; border-radius: 14px; background: #121822; border: 1px solid #1b2534; display: flex; flex-direction: column; gap: 11px">
+                <strong style="font-size: 14px; font-weight: 600">Centros de custo</strong>
+                <sc-for list="{{ centros }}" as="c" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px">
+                    <span style="width: 9px; height: 9px; flex: none; border-radius: 2px; background: {{ c.color }}"></span>
+                    <span style="color: #cfd9e5">{{ c.label }}</span>
+                    <span style="flex: 1; height: 5px; border-radius: 3px; background: #1b2534; overflow: hidden"><span style="display: block; height: 100%; border-radius: 3px; background: {{ c.color }}; width: {{ c.pct }}"></span></span>
+                    <span style="width: 62px; text-align: right; color: #8fa3bb; font-variant-numeric: tabular-nums">{{ c.val }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 2b — RETIRADA ═══════ -->
+    <div id="2b" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">2B</span>
+        <strong style="font-size: 17px; font-weight: 600">Retirada — modo portaria</strong>
+        <span style="font-size: 13px; color: #8fa3bb">Alvos grandes, uma ação por vez. Desktop 1440</span>
+      </div>
+
+      <div style="width: 1440px; height: 980px; display: flex; background: #0d1117; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #123f7d, 0 24px 60px rgba(0,0,0,0.6)">
+        <aside style="width: 76px; flex: none; background: #0a0d13; border-right: 1px solid #1b2534; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 6px">
+          <div style="width: 44px; height: 44px; flex: none; border-radius: 12px; background: #0a0d13; overflow: hidden; box-shadow: 0 0 22px rgba(0,191,255,0.45); margin-bottom: 12px">
+            <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+          </div>
+          <sc-for list="{{ navRet }}" as="item" hint-placeholder-count="12">
+            <div title="{{ item.label }}" style="width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #6b7c92" style-hover="background: #121a26; color: #00bfff">
+              <i class="ph {{ item.icon }}" style="font-size: 20px"></i>
+            </div>
+          </sc-for>
+          <div style="margin-top: auto; width: 34px; height: 34px; border-radius: 50%; background: #16273d; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #7ab4ff">RM</div>
+        </aside>
+
+        <div style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+          <div style="position: relative; overflow: hidden; padding: 22px 28px; background: linear-gradient(115deg, #0b1c33 0%, #0d1117 62%); border-bottom: 1px solid #1b2534">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.09) 0 2px, transparent 2px 34px)"></div>
+            <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px">
+              <div style="display: flex; flex-direction: column; gap: 4px">
+                <span style="font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #00bfff; font-weight: 600">Balcão · Campus Sinop · 21/08</span>
+                <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Retirada de produtos</h1>
+              </div>
+              <div style="display: flex; gap: 22px; flex: none">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05">
+                  <span style="font-family: 'Anton', sans-serif; font-size: 34px; color: #4ade80; font-variant-numeric: tabular-nums">23</span>
+                  <span style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8fa3bb">entregues hoje</span>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.05">
+                  <span style="font-family: 'Anton', sans-serif; font-size: 34px; color: #fbbf24; font-variant-numeric: tabular-nums">31</span>
+                  <span style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8fa3bb">na fila</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex: 1; padding: 24px 28px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; min-height: 0">
+            <div style="display: flex; flex-direction: column; gap: 18px; min-height: 0">
+              <div style="display: flex; gap: 14px">
+                <div style="flex: 1; display: flex; align-items: center; gap: 12px; padding: 0 20px; height: 66px; border-radius: 14px; background: #121822; border: 1px solid #24374f">
+                  <i class="ph ph-magnifying-glass" style="font-size: 24px; color: #00bfff"></i>
+                  <span style="font-size: 19px; color: #4d5f75">Bipe o QR ou digite CPF / nº do pedido</span>
+                  <span style="margin-left: auto; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92; padding: 4px 9px; border: 1px solid #24374f; border-radius: 7px">Enter</span>
+                </div>
+                <button style="flex: none; display: flex; align-items: center; gap: 9px; padding: 0 22px; height: 66px; border-radius: 14px; border: none; background: #0077ff; color: #ffffff; font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 26px rgba(0,119,255,0.45)" style-hover="background: #00bfff; color: #06121f">
+                  <i class="ph-fill ph-qr-code" style="font-size: 24px"></i>Ler QR
+                </button>
+              </div>
+
+              <div style="flex: 1; border-radius: 16px; background: #121822; border: 1px solid #17456f; display: flex; flex-direction: column; overflow: hidden; min-height: 0; box-shadow: 0 0 0 1px rgba(0,191,255,0.12), 0 0 40px rgba(0,119,255,0.14)">
+                <div style="display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: linear-gradient(120deg, rgba(0,119,255,0.2), transparent); border-bottom: 1px solid #1b2534">
+                  <div style="width: 56px; height: 56px; flex: none; border-radius: 14px; background: #16273d; display: grid; place-items: center; font-family: 'Anton', sans-serif; font-size: 20px; color: #7ab4ff">MA</div>
+                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <strong style="font-size: 21px; font-weight: 600">Marina Alves de Souza</strong>
+                      <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; background: rgba(74,222,128,0.16); color: #86efac">Sócia ativa</span>
+                    </div>
+                    <span style="font-size: 13px; color: #8fa3bb">CPF 048.***.***-12 · Sistemas de Informação · 5º semestre</span>
+                  </div>
+                  <div style="flex: none; text-align: right; line-height: 1.2">
+                    <div style="font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.03em">#2418</div>
+                    <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8fa3bb">pago em 14/08</div>
+                  </div>
+                </div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden">
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding: 13px 22px 9px">
+                    <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7c92; font-weight: 600">Confira os itens</span>
+                    <span style="font-size: 12.5px; color: #8fa3bb">2 de 4 conferidos</span>
+                  </div>
+                  <sc-for list="{{ itens }}" as="i" hint-placeholder-count="4">
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 12px 22px; border-top: 1px solid #161e29" style-hover="background: #16202d">
+                      <span style="width: 26px; height: 26px; flex: none; border-radius: 8px; border: 2px solid {{ i.boxBorder }}; background: {{ i.boxBg }}; display: grid; place-items: center; color: #06121f"><i class="ph-fill ph-check" style="font-size: 15px; opacity: {{ i.checkOpacity }}"></i></span>
+                      <div style="width: 46px; height: 46px; flex: none; border-radius: 10px; background: #16202d; border: 1px solid #24374f; display: grid; place-items: center; color: #4d5f75"><i class="ph {{ i.icon }}" style="font-size: 21px"></i></div>
+                      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3">
+                        <span style="font-size: 15px; font-weight: 600">{{ i.nome }}</span>
+                        <span style="font-size: 12.5px; color: #6b7c92">{{ i.variacao }}</span>
+                      </div>
+                      <span style="font-family: 'Anton', sans-serif; font-size: 20px; color: #cfd9e5">{{ i.qtd }}</span>
+                      <span style="width: 84px; text-align: right; font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: #8fa3bb">{{ i.valor }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 14px; padding: 16px 22px; border-top: 1px solid #1b2534; background: #0f151e">
+                  <div style="display: flex; flex-direction: column; line-height: 1.25">
+                    <span style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92">Total do pedido</span>
+                    <span style="font-family: 'Anton', sans-serif; font-size: 26px; font-variant-numeric: tabular-nums">R$ 189,00</span>
+                  </div>
+                  <button style="margin-left: auto; padding: 13px 20px; border-radius: 12px; border: 1px solid #2a3d55; background: transparent; color: #a9bacd; font-family: inherit; font-size: 14px; cursor: pointer" style-hover="border-color: #f87171; color: #fca5a5">Item em falta</button>
+                  <button style="display: flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 12px; border: none; background: #16a34a; color: #ffffff; font-family: 'Anton', sans-serif; font-size: 19px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 26px rgba(22,163,74,0.4)" style-hover="background: #22c55e">
+                    <i class="ph-fill ph-check-circle" style="font-size: 24px"></i>Marcar entregue
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-radius: 14px; background: #121822; border: 1px solid #1b2534; display: flex; flex-direction: column; overflow: hidden; min-height: 0">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; border-bottom: 1px solid #1b2534">
+                <strong style="font-size: 14.5px; font-weight: 600">Fila de retirada</strong>
+                <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: rgba(251,191,36,0.16); color: #fcd34d">31</span>
+              </div>
+              <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+                <sc-for list="{{ fila }}" as="f" hint-placeholder-count="8">
+                  <div style="display: flex; align-items: center; gap: 11px; padding: 11px 18px; border-bottom: 1px solid #161e29" style-hover="background: #16202d">
+                    <span style="font-family: 'Anton', sans-serif; font-size: 15px; color: #4d5f75; width: 44px">{{ f.num }}</span>
+                    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3">
+                      <span style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ f.nome }}</span>
+                      <span style="font-size: 11.5px; color: #6b7c92">{{ f.itens }}</span>
+                    </div>
+                    <i class="ph ph-caret-right" style="font-size: 15px; color: #4d5f75"></i>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ 2c — LOJA PÚBLICA ═══════ -->
+    <div id="2c" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.08em; background: #00bfff; color: #0d1117; padding: 5px 12px; border-radius: 4px">2C</span>
+        <strong style="font-size: 17px; font-weight: 600">Loja pública — /cyber</strong>
+        <span style="font-size: 13px; color: #8fa3bb">Brasão inteiro no hero. Desktop + mobile.</span>
+      </div>
+
+      <div style="display: flex; gap: 28px; align-items: flex-start">
+        <!-- desktop -->
+        <div style="width: 1280px; background: #0d1117; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #123f7d, 0 24px 60px rgba(0,0,0,0.6)">
+          <nav style="display: flex; align-items: center; gap: 26px; padding: 14px 32px; border-bottom: 1px solid #1b2534; background: rgba(10,13,19,0.9)">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: #0a0d13; overflow: hidden">
+                <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+              </div>
+              <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 19px; letter-spacing: 0.04em; text-transform: uppercase">A.A.A.S.I. Cyber</strong>
+            </div>
+            <div style="display: flex; gap: 22px; font-size: 13.5px; color: #a9bacd">
+              <span style="color: #00bfff; font-weight: 600">Início</span><span>Eventos</span><span>Produtos</span><span>Seja sócio</span>
+            </div>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px">
+              <span style="position: relative; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid #24374f; color: #cfd9e5">
+                <i class="ph ph-shopping-bag" style="font-size: 18px"></i>
+                <span style="position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 20px; background: #0077ff; color: #fff; font-size: 10.5px; font-weight: 700; display: grid; place-items: center">2</span>
+              </span>
+              <button style="padding: 9px 16px; border-radius: 10px; border: 1px solid #2a3d55; background: transparent; color: #cfd9e5; font-family: inherit; font-size: 13px; cursor: pointer" style-hover="border-color: #00bfff; color: #fff">Entrar</button>
+            </div>
+          </nav>
+
+          <!-- hero -->
+          <div style="position: relative; overflow: hidden; padding: 44px 32px 40px; background: radial-gradient(120% 120% at 78% 20%, #10406e 0%, #0b1a2c 45%, #0a0d13 100%)">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.07) 0 2px, transparent 2px 40px)"></div>
+            <div style="position: relative; display: flex; align-items: center; gap: 40px">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+                <span style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #00bfff; font-weight: 600">UNEMAT Sinop · Sistemas de Informação</span>
+                <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 74px; line-height: 0.94; letter-spacing: 0.01em; text-transform: uppercase; margin: 0">O café é forte,<br>a torcida é <span style="color: #00bfff">mais</span></h1>
+                <p style="margin: 0; max-width: 470px; font-size: 15.5px; color: #a9bacd; text-wrap: pretty">Ingressos, merch e plano de sócio da Atlética Cyber num só lugar. Sócio paga menos em tudo — sempre.</p>
+                <div style="display: flex; gap: 12px; margin-top: 4px">
+                  <button style="display: flex; align-items: center; gap: 9px; padding: 14px 24px; border-radius: 12px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 10px 30px rgba(0,119,255,0.45)" style-hover="background: #00bfff; color: #06121f"><i class="ph-fill ph-ticket" style="font-size: 22px"></i>Garantir ingresso</button>
+                  <button style="display: flex; align-items: center; gap: 9px; padding: 14px 24px; border-radius: 12px; border: 1px solid #2a5c8a; background: rgba(255,255,255,0.05); color: #cfd9e5; font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer" style-hover="border-color: #00bfff; color: #fff">Virar sócio</button>
+                </div>
+              </div>
+              <img src="assets/brasao-cyber.jpeg" alt="Brasão A.A.A.S.I. Cyber" style="flex: none; height: 380px; width: auto; mix-blend-mode: lighten; filter: drop-shadow(0 0 60px rgba(0,191,255,0.35))">
+            </div>
+          </div>
+
+          <!-- evento destaque -->
+          <div style="padding: 30px 32px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <h2 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 28px; letter-spacing: 0.03em; text-transform: uppercase; margin: 0">Próximo evento</h2>
+              <span style="font-size: 12.5px; color: #6b7c92">1º lote quase esgotado</span>
+            </div>
+            <div style="position: relative; overflow: hidden; display: flex; gap: 24px; padding: 22px; border-radius: 16px; background: linear-gradient(115deg, #13293f, #121822); border: 1px solid #24374f">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(#00e0ff, #0077ff)"></div>
+              <div style="width: 220px; height: 150px; flex: none; border-radius: 12px; overflow: hidden">
+                <image-slot id="loja-evento-hero" shape="rounded" radius="12" placeholder="Arte da Cyber Night"></image-slot>
+              </div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; background: rgba(0,191,255,0.16); color: #7fdcff">Vendendo</span>
+                  <span style="font-size: 12.5px; color: #8fa3bb">29 de agosto · 23h · Hangar 33, Sinop</span>
+                </div>
+                <h3 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 38px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Cyber Night — Open Bar</h3>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #fcd34d"><i class="ph-fill ph-fire" style="font-size: 17px"></i>Restam 12 ingressos no 1º lote</div>
+                <div style="margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+                  <div style="display: flex; gap: 10px">
+                    <div style="padding: 9px 14px; border-radius: 10px; background: #0f1a26; border: 1px solid #24374f; display: flex; flex-direction: column; line-height: 1.2">
+                      <span style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7c92">Fã</span>
+                      <span style="font-family: 'Anton', sans-serif; font-size: 22px">R$ 40</span>
+                    </div>
+                    <div style="padding: 9px 14px; border-radius: 10px; background: linear-gradient(140deg, rgba(0,119,255,0.28), rgba(0,119,255,0.07)); border: 1px solid #17456f; display: flex; flex-direction: column; line-height: 1.2">
+                      <span style="font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #b4d3ff">Sócio</span>
+                      <span style="font-family: 'Anton', sans-serif; font-size: 22px; color: #fff">R$ 25</span>
+                    </div>
+                  </div>
+                  <button style="display: flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 12px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 17px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 24px rgba(0,119,255,0.4)" style-hover="background: #00bfff; color: #06121f">Comprar ingresso</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- produtos -->
+          <div style="padding: 8px 32px 32px; display: flex; flex-direction: column; gap: 14px">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <h2 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 28px; letter-spacing: 0.03em; text-transform: uppercase; margin: 0">Loja da Cyber</h2>
+              <a href="#2c" style="font-size: 13px">ver catálogo completo</a>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px">
+              <sc-for list="{{ produtos }}" as="p" hint-placeholder-count="4">
+                <div style="border-radius: 14px; background: #121822; border: 1px solid #1b2534; overflow: hidden; display: flex; flex-direction: column" style-hover="border-color: #00bfff">
+                  <div style="height: 188px">
+                    <image-slot id="{{ p.slot }}" shape="rect" placeholder="{{ p.ph }}"></image-slot>
+                  </div>
+                  <div style="padding: 14px; display: flex; flex-direction: column; gap: 9px">
+                    <div style="display: flex; flex-direction: column; line-height: 1.3">
+                      <span style="font-size: 14.5px; font-weight: 600">{{ p.nome }}</span>
+                      <span style="font-size: 11.5px; color: #6b7c92">{{ p.detalhe }}</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 9px">
+                      <span style="font-family: 'Anton', sans-serif; font-size: 24px">{{ p.socio }}</span>
+                      <span style="font-size: 12px; color: #6b7c92; text-decoration: line-through">{{ p.fa }}</span>
+                      <span style="margin-left: auto; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; background: rgba(0,191,255,0.14); color: #7fdcff">sócio</span>
+                    </div>
+                    <button style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #2a5c8a; background: transparent; color: #7ab4ff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer" style-hover="background: rgba(0,119,255,0.14); color: #fff">Adicionar</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- vire sócio -->
+          <div style="margin: 0 32px 32px; position: relative; overflow: hidden; border-radius: 16px; padding: 30px 32px; background: linear-gradient(110deg, #0f3c66, #0b1a2c 62%); border: 1px solid #17456f">
+            <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.08) 0 2px, transparent 2px 30px)"></div>
+            <div style="position: relative; display: flex; align-items: center; gap: 34px">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: 11.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #7fdcff; font-weight: 600">Plano de sócio 2º/2026</span>
+                <h2 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Vire sócio e pague menos em tudo</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px">
+                  <sc-for list="{{ beneficios }}" as="b" hint-placeholder-count="5">
+                    <span style="display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); font-size: 12.5px; color: #d8e4f0">
+                      <i class="ph-fill ph-check-circle" style="font-size: 15px; color: #00e0ff"></i>{{ b }}
+                    </span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="flex: none; width: 250px; padding: 20px; border-radius: 14px; background: rgba(10,13,19,0.66); border: 1px solid rgba(255,255,255,0.14); display: flex; flex-direction: column; gap: 10px">
+                <span style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #8fa3bb; font-weight: 600">Semestral</span>
+                <div style="display: flex; align-items: baseline; gap: 6px">
+                  <span style="font-family: 'Anton', sans-serif; font-size: 46px; line-height: 1">R$ 89</span>
+                  <span style="font-size: 13px; color: #8fa3bb">/semestre</span>
+                </div>
+                <span style="font-size: 12px; color: #8fa3bb">ou R$ 149 no plano anual</span>
+                <button style="margin-top: 4px; width: 100%; padding: 13px; border-radius: 11px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 17px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 24px rgba(0,119,255,0.4)" style-hover="background: #00bfff; color: #06121f">Quero ser sócio</button>
+              </div>
+            </div>
+          </div>
+
+          <footer style="padding: 22px 32px; border-top: 1px solid #1b2534; display: flex; align-items: center; gap: 16px; font-size: 12.5px; color: #6b7c92">
+            <span>A.A.A.S.I. Cyber · UNEMAT Sinop · CNPJ 00.000.000/0001-00</span>
+            <span style="margin-left: auto; display: flex; gap: 14px"><i class="ph ph-instagram-logo" style="font-size: 18px"></i><i class="ph ph-whatsapp-logo" style="font-size: 18px"></i></span>
+          </footer>
+        </div>
+
+        <!-- mobile -->
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span style="font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #6b7c92; font-weight: 600">Mobile 390</span>
+          <div style="width: 390px; height: 844px; border-radius: 34px; overflow: hidden; background: #0d1117; box-shadow: 0 0 0 1px #24374f, 0 24px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 6px; font-size: 12px; color: #8fa3bb">
+              <span style="font-weight: 600">9:41</span>
+              <span style="display: flex; gap: 5px"><i class="ph-fill ph-cell-signal-full" style="font-size: 13px"></i><i class="ph-fill ph-wifi-high" style="font-size: 13px"></i><i class="ph-fill ph-battery-high" style="font-size: 13px"></i></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 18px 12px">
+              <div style="width: 34px; height: 34px; border-radius: 9px; background: #0a0d13; overflow: hidden; flex: none">
+                <img src="assets/brasao-cyber.jpeg" alt="Cyber" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; mix-blend-mode: lighten">
+              </div>
+              <strong style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase">A.A.A.S.I. Cyber</strong>
+              <span style="margin-left: auto; position: relative; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; border: 1px solid #24374f; color: #cfd9e5">
+                <i class="ph ph-shopping-bag" style="font-size: 16px"></i>
+                <span style="position: absolute; top: -5px; right: -5px; min-width: 17px; height: 17px; border-radius: 20px; background: #0077ff; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center">2</span>
+              </span>
+            </div>
+
+            <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+              <div style="position: relative; overflow: hidden; padding: 14px 18px 20px; background: radial-gradient(130% 110% at 70% 10%, #10406e 0%, #0b1a2c 50%, #0a0d13 100%)">
+                <div style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(0,191,255,0.07) 0 2px, transparent 2px 34px)"></div>
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px">
+                  <img src="assets/brasao-cyber.jpeg" alt="Brasão Cyber" style="height: 186px; width: auto; mix-blend-mode: lighten; filter: drop-shadow(0 0 40px rgba(0,191,255,0.35))">
+                  <h1 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; line-height: 0.96; letter-spacing: 0.01em; text-transform: uppercase; margin: 0; text-align: center">O café é forte,<br>a torcida é <span style="color: #00bfff">mais</span></h1>
+                  <div style="display: flex; gap: 9px; width: 100%; margin-top: 4px">
+                    <button style="flex: 1; padding: 13px; border-radius: 11px; border: none; background: #0077ff; color: #fff; font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 22px rgba(0,119,255,0.42)">Ingresso</button>
+                    <button style="flex: 1; padding: 13px; border-radius: 11px; border: 1px solid #2a5c8a; background: rgba(255,255,255,0.05); color: #cfd9e5; font-family: 'Anton', sans-serif; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer">Virar sócio</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 12px">
+                <div style="position: relative; overflow: hidden; padding: 14px; border-radius: 14px; background: linear-gradient(115deg, #13293f, #121822); border: 1px solid #24374f; display: flex; flex-direction: column; gap: 9px">
+                  <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(#00e0ff, #0077ff)"></div>
+                  <div style="display: flex; align-items: center; gap: 8px">
+                    <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; background: rgba(0,191,255,0.16); color: #7fdcff">Vendendo</span>
+                    <span style="font-size: 11.5px; color: #8fa3bb">29/08 · Hangar 33</span>
+                  </div>
+                  <h3 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 26px; line-height: 1; letter-spacing: 0.02em; text-transform: uppercase; margin: 0">Cyber Night — Open Bar</h3>
+                  <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #fcd34d"><i class="ph-fill ph-fire" style="font-size: 15px"></i>Restam 12 no 1º lote</div>
+                  <div style="display: flex; align-items: center; gap: 9px">
+                    <span style="font-size: 12px; color: #6b7c92; text-decoration: line-through">R$ 40</span>
+                    <span style="font-family: 'Anton', sans-serif; font-size: 24px">R$ 25</span>
+                    <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; background: rgba(0,191,255,0.14); color: #7fdcff">sócio</span>
+                    <button style="margin-left: auto; padding: 10px 16px; border-radius: 10px; border: none; background: #0077ff; color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Comprar</button>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: baseline; gap: 10px; padding-top: 2px">
+                  <h2 style="font-family: 'Anton', sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 0.03em; text-transform: uppercase; margin: 0">Loja da Cyber</h2>
+                  <a href="#2c" style="font-size: 12px">ver tudo</a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+                  <sc-for list="{{ produtosMob }}" as="p" hint-placeholder-count="2">
+                    <div style="border-radius: 13px; background: #121822; border: 1px solid #1b2534; overflow: hidden; display: flex; flex-direction: column">
+                      <div style="height: 128px">
+                        <image-slot id="{{ p.slot }}" shape="rect" placeholder="{{ p.ph }}"></image-slot>
+                      </div>
+                      <div style="padding: 11px; display: flex; flex-direction: column; gap: 5px">
+                        <span style="font-size: 13px; font-weight: 600">{{ p.nome }}</span>
+                        <div style="display: flex; align-items: baseline; gap: 7px">
+                          <span style="font-family: 'Anton', sans-serif; font-size: 19px">{{ p.socio }}</span>
+                          <span style="font-size: 11px; color: #6b7c92; text-decoration: line-through">{{ p.fa }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; padding: 9px 10px 16px; border-top: 1px solid #1b2534; background: rgba(10,13,19,0.94)">
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #00bfff"><i class="ph-fill ph-house" style="font-size: 21px"></i><span style="font-size: 10px; font-weight: 600">Início</span></div>
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-confetti" style="font-size: 21px"></i><span style="font-size: 10px">Eventos</span></div>
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-t-shirt" style="font-size: 21px"></i><span style="font-size: 10px">Loja</span></div>
+              <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #6b7c92"><i class="ph ph-identification-badge" style="font-size: 21px"></i><span style="font-size: 10px">Sócio</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const railBase = [
+      { label: "Dashboard", icon: "ph-squares-four" },
+      { label: "Sócios", icon: "ph-users-three" },
+      { label: "Planos", icon: "ph-identification-badge" },
+      { label: "Cobranças", icon: "ph-receipt" },
+      { label: "Produtos", icon: "ph-t-shirt" },
+      { label: "Pedidos", icon: "ph-shopping-bag" },
+      { label: "Retirada", icon: "ph-package" },
+      { label: "Eventos", icon: "ph-confetti" },
+      { label: "Financeiro", icon: "ph-chart-line-up" },
+      { label: "Loja", icon: "ph-storefront" },
+      { label: "Diretoria", icon: "ph-users-four" },
+      { label: "Configurações", icon: "ph-gear-six" }
+    ];
+    const navFin = railBase.filter(i => i.label !== "Financeiro");
+    const navRet = railBase.map(i =>
+      i.label === "Retirada" ? { label: i.label, icon: "ph-package", active: true } : i
+    );
+
+    const cc = {
+      evento: "#00bfff",
+      socios: "#4ade80",
+      loja: "#a78bfa",
+      admin: "#8fa3bb",
+      esporte: "#fbbf24"
+    };
+    const IN = { tipo: "Entrada", tipoBg: "rgba(74,222,128,0.14)", tipoFg: "#86efac", valColor: "#4ade80" };
+    const OUT = { tipo: "Saída", tipoBg: "rgba(248,113,113,0.14)", tipoFg: "#fca5a5", valColor: "#f87171" };
+    const ok = { compIcon: "ph-paperclip", compColor: "#4d5f75" };
+    const missing = { compIcon: "ph-warning", compColor: "#fbbf24" };
+    const row = (data, desc, ccKey, ccLabel, dir, valor, comp) => Object.assign(
+      { data, desc, cc: ccLabel, ccColor: cc[ccKey], valor }, dir, comp
+    );
+    const lancamentos = [
+      row("21/08", "Ingressos Cyber Night — 1º lote (48 un.)", "evento", "Cyber Night", IN, "R$ 1.200,00", ok),
+      row("20/08", "Locação de som e luz — Hangar 33", "evento", "Cyber Night", OUT, "R$ 3.400,00", ok),
+      row("19/08", "Mensalidades semestrais (14 sócios)", "socios", "Sócios", IN, "R$ 1.246,00", ok),
+      row("18/08", "Kit Calourada — lote de camisetas", "loja", "Loja", OUT, "R$ 2.800,00", ok),
+      row("17/08", "Venda de canecas Java (23 un.)", "loja", "Loja", IN, "R$ 897,00", ok),
+      row("16/08", "Ônibus delegação Interunemat", "esporte", "Interunemat", OUT, "R$ 1.900,00", missing),
+      row("15/08", "Patrocínio — Byte Tech Sinop", "admin", "Administrativo", IN, "R$ 1.250,00", ok),
+      row("14/08", "Pedido #2418 — Marina Alves", "loja", "Loja", IN, "R$ 189,00", ok),
+      row("13/08", "Uniformes futsal masculino", "esporte", "Futsal", OUT, "R$ 1.240,00", ok),
+      row("12/08", "Taxa da maquininha (agosto)", "admin", "Administrativo", OUT, "R$ 312,00", ok),
+      row("11/08", "Ingressos Cyber Night — pré-venda", "evento", "Cyber Night", IN, "R$ 2.150,00", ok)
+    ];
+    const dreRec = [
+      { label: "Mensalidades", val: "R$ 12.900" },
+      { label: "Ingressos", val: "R$ 7.200" },
+      { label: "Loja", val: "R$ 3.500" },
+      { label: "Patrocínio", val: "R$ 1.250" }
+    ];
+    const dreDesp = [
+      { label: "Estrutura de evento", val: "R$ 6.400" },
+      { label: "Brindes e kits", val: "R$ 2.800" },
+      { label: "Transporte esportivo", val: "R$ 1.900" },
+      { label: "Administrativo", val: "R$ 1.000" }
+    ];
+    const centros = [
+      { label: "Cyber Night", color: cc.evento, pct: "53%", val: "R$ 6.400" },
+      { label: "Loja", color: cc.loja, pct: "23%", val: "R$ 2.800" },
+      { label: "Interunemat", color: cc.esporte, pct: "16%", val: "R$ 1.900" },
+      { label: "Administrativo", color: cc.admin, pct: "8%", val: "R$ 1.000" }
+    ];
+
+    const done = { boxBorder: "#22c55e", boxBg: "#22c55e", checkOpacity: 1 };
+    const todo = { boxBorder: "#2a3d55", boxBg: "transparent", checkOpacity: 0 };
+    const itens = [
+      Object.assign({ nome: "Camiseta Cyber 2026", variacao: "Tamanho P · preta", qtd: "×1", valor: "R$ 79,00", icon: "ph-t-shirt" }, done),
+      Object.assign({ nome: "Caneca Java 350ml", variacao: "Cerâmica · ciano", qtd: "×2", valor: "R$ 60,00", icon: "ph-coffee" }, done),
+      Object.assign({ nome: "Cordão + crachá Cyber", variacao: "Sublimado", qtd: "×1", valor: "R$ 25,00", icon: "ph-identification-card" }, todo),
+      Object.assign({ nome: "Adesivo gorila (cartela)", variacao: "6 peças", qtd: "×1", valor: "R$ 25,00", icon: "ph-sticker" }, todo)
+    ];
+    const fila = [
+      { num: "#2419", nome: "Diego Ferraz Lima", itens: "2 itens · Kit Calourada" },
+      { num: "#2421", nome: "Bruna Kaori Tanaka", itens: "1 item · Camiseta M" },
+      { num: "#2422", nome: "Otávio Menezes", itens: "3 itens · Caneca + adesivo" },
+      { num: "#2424", nome: "Larissa Prado", itens: "1 item · Moletom G" },
+      { num: "#2425", nome: "Henrique Vilela", itens: "2 itens · Camiseta GG" },
+      { num: "#2427", nome: "Camila Nogueira", itens: "1 item · Cordão" },
+      { num: "#2428", nome: "Pedro Tsuru", itens: "4 itens · Kit completo" },
+      { num: "#2430", nome: "Aline Barcelos", itens: "1 item · Caneca Java" }
+    ];
+
+    const produtos = [
+      { slot: "loja-prod-1", ph: "Camiseta Cyber", nome: "Camiseta Cyber 2026", detalhe: "P ao GG · algodão", socio: "R$ 79", fa: "R$ 99" },
+      { slot: "loja-prod-2", ph: "Caneca Java", nome: "Caneca Java 350ml", detalhe: "Cerâmica ciano", socio: "R$ 30", fa: "R$ 42" },
+      { slot: "loja-prod-3", ph: "Moletom gorila", nome: "Moletom Gorila", detalhe: "M ao GG · felpado", socio: "R$ 149", fa: "R$ 189" },
+      { slot: "loja-prod-4", ph: "Kit Calourada", nome: "Kit Calourada", detalhe: "Camiseta + caneca + cordão", socio: "R$ 120", fa: "R$ 160" }
+    ];
+    const produtosMob = produtos.slice(0, 2).map(p => ({
+      slot: p.slot + "-mob", ph: p.ph, nome: p.nome, socio: p.socio, fa: p.fa
+    }));
+    const beneficios = [
+      "Ingresso mais barato em toda festa",
+      "Desconto na loja",
+      "Carteirinha digital",
+      "Prioridade nas delegações",
+      "Camiseta de boas-vindas"
+    ];
+
+    const navSoc = railBase.filter(i => i.label !== "Sócios");
+
+    const st = {
+      ativo: { status: "Em dia", stBg: "rgba(74,222,128,0.14)", stFg: "#86efac", venColor: "#8fa3bb" },
+      vencer: { status: "A vencer", stBg: "rgba(251,191,36,0.14)", stFg: "#fcd34d", venColor: "#fcd34d" },
+      atraso: { status: "Inadimplente", stBg: "rgba(248,113,113,0.14)", stFg: "#fca5a5", venColor: "#f87171" }
+    };
+    const soc = (ini, nome, curso, plano, planoTipo, ven, s, sel) => Object.assign({
+      ini, nome, curso, plano, planoTipo,
+      planoBg: planoTipo === "Anual" ? "rgba(0,191,255,0.14)" : "rgba(147,151,171,0.14)",
+      planoFg: planoTipo === "Anual" ? "#7fdcff" : "#b2b6ca",
+      ven,
+      rowBg: sel ? "rgba(0,119,255,0.1)" : "transparent",
+      rowMark: sel ? "#00bfff" : "transparent"
+    }, st[s]);
+    const socios = [
+      soc("MA", "Marina Alves de Souza", "Sistemas de Informação · 5º", "Semestral", "Semestral", "12/12/2026", "ativo", true),
+      soc("DF", "Diego Ferraz Lima", "Sistemas de Informação · 3º", "Anual", "Anual", "02/03/2027", "ativo"),
+      soc("BK", "Bruna Kaori Tanaka", "Engenharia Florestal · 7º", "Semestral", "Semestral", "28/08/2026", "vencer"),
+      soc("OM", "Otávio Menezes", "Sistemas de Informação · 1º", "Semestral", "Semestral", "05/08/2026", "atraso"),
+      soc("LP", "Larissa Prado", "Agronomia · 4º", "Anual", "Anual", "19/01/2027", "ativo"),
+      soc("HV", "Henrique Vilela", "Sistemas de Informação · 6º", "Semestral", "Semestral", "31/08/2026", "vencer"),
+      soc("CN", "Camila Nogueira", "Zootecnia · 2º", "Semestral", "Semestral", "14/12/2026", "ativo"),
+      soc("PT", "Pedro Tsuru", "Sistemas de Informação · 8º", "Anual", "Anual", "07/04/2027", "ativo"),
+      soc("AB", "Aline Barcelos", "Enfermagem · 3º", "Semestral", "Semestral", "01/08/2026", "atraso"),
+      soc("RG", "Rafael Gomes Pinto", "Sistemas de Informação · 2º", "Semestral", "Semestral", "22/11/2026", "ativo"),
+      soc("JS", "Júlia Sanches", "Direito · 5º", "Anual", "Anual", "15/05/2027", "ativo"),
+      soc("VC", "Vitor Camargo", "Sistemas de Informação · 4º", "Semestral", "Semestral", "09/12/2026", "ativo")
+    ];
+    const chips = [
+      { label: "Todos", n: "486", on: true },
+      { label: "Em dia", n: "412", on: false },
+      { label: "A vencer", n: "37", on: false },
+      { label: "Inadimplentes", n: "37", on: false }
+    ];
+    const dados = [
+      { k: "CPF", v: "048.***.***-12" },
+      { k: "Matrícula", v: "2023104857" },
+      { k: "E-mail", v: "marina.souza@unemat.br" },
+      { k: "Telefone", v: "(66) 9 9812-4477" },
+      { k: "Sócia desde", v: "12/03/2024 · 5º semestre seguido" },
+      { k: "Plano", v: "Semestral · R$ 89 · vence 12/12/2026" }
+    ];
+    const historico = [
+      { t: "Mensalidade 2º/26 paga", d: "19/08 · Pix · R$ 89,00", c: "#4ade80" },
+      { t: "Pedido #2418 retirado", d: "21/08 · balcão Sinop", c: "#00bfff" },
+      { t: "Ingresso Cyber Night", d: "14/08 · lote sócio · R$ 25,00", c: "#00bfff" },
+      { t: "Carteirinha emitida", d: "12/03/24 · válida até 12/12/26", c: "#8fa3bb" }
+    ];
+
+    const n = 21, qrCells = [];
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const inBox = (r0, c0) => r >= r0 && r < r0 + 7 && c >= c0 && c < c0 + 7;
+        const isFin = inBox(0, 0) || inBox(0, 14) || inBox(14, 0);
+        let on;
+        if (isFin) {
+          const r0 = r < 7 ? 0 : 14, c0 = c < 7 ? 0 : 14;
+          const d = Math.max(Math.abs(r - r0 - 3), Math.abs(c - c0 - 3));
+          on = d === 3 || d <= 1;
+        } else {
+          on = ((r * 31 + c * 17 + r * c * 7) % 11) < 5;
+        }
+        qrCells.push({ bg: on ? "#0a0d13" : "transparent" });
+      }
+    }
+    const cartBenef = [
+      { icon: "ph-ticket", t: "Ingresso no lote sócio" },
+      { icon: "ph-t-shirt", t: "Desconto na loja" },
+      { icon: "ph-trophy", t: "Prioridade em delegação" }
+    ];
+
+    return { navFin, navRet, navSoc, lancamentos, dreRec, dreDesp, centros, itens, fila, produtos, produtosMob, beneficios, socios, chips, dados, historico, qrCells, cartBenef };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minhas compras — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/conta.css">
+<style>.orders { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; align-items:start; }</style>
+</head>
+<body>
+<div class="conta">
+  <div class="conta-top" id="contaTop"></div>
+  <div class="conta-body">
+    <div class="stack gap-4"><h1 class="display" style="font-size:26px;margin:0">Minhas compras</h1><span class="dim" style="font-size:13px">Seus pedidos da loja e ingressos.</span></div>
+    <div id="content"></div>
+  </div>
+  <nav class="conta-bottom" id="contaBottom"></nav>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+const PAY = { pending:['Aguardando pagamento','pill--warn'], paid:['Pago','pill--success'], cancelled:['Cancelado','pill--neutral'] };
+const FUL = { open:'', ready:'Pronto p/ retirada', delivered:'Retirado' };
+
+function orderCard(o) {
+  const [plbl, pcls] = PAY[o.paymentStatus] || PAY.pending;
+  const items = (o.items || []).map(i => `<div class="row gap-8" style="font-size:12.5px"><span class="grow">${AH.escape(i.description)} ${i.quantity > 1 ? '×' + i.quantity : ''}</span><span class="dim">${AH.fmtBRL(i.subtotalCents)}</span></div>`).join('');
+  const ful = FUL[o.fulfillmentStatus] || '';
+  return `<div class="acc-panel">
+    <div class="row" style="justify-content:space-between;align-items:center"><strong style="font-size:15px">Pedido #${o.orderNumber}</strong><span class="pill ${pcls}">${plbl}</span></div>
+    <span class="dim" style="font-size:12px">${AH.fmtDate(o.createdAt)}${ful ? ' · ' + ful : ''}</span>
+    <div class="stack gap-6" style="padding:8px 0;border-top:1px solid var(--border-hair);border-bottom:1px solid var(--border-hair)">${items || '<span class="dim" style="font-size:12.5px">—</span>'}</div>
+    <div class="row" style="justify-content:space-between;align-items:center"><span class="dim" style="font-size:12px">Total</span><span class="display" style="font-size:20px">${AH.fmtBRL(o.totalCents)}</span></div>
+    ${o.paymentStatus === 'paid' && o.fulfillmentStatus !== 'delivered' ? '<div class="row gap-8" style="font-size:12px;color:var(--brand-accent)"><i class="ph ph-qr-code"></i> Mostre este pedido na retirada com a diretoria.</div>' : ''}
+  </div>`;
+}
+
+(async function () {
+  const a = AH.conta.init('compras');
+  if (!a) return;
+  const content = document.getElementById('content');
+  let data = null;
+  try { data = await AH.api.get('/account/orders'); } catch (e) { AH.toast(e.message, 'err'); }
+  const list = (data && data.orders) || [];
+  if (!list.length) {
+    content.innerHTML = `<div class="acc-panel" style="align-items:center;text-align:center;gap:10px;max-width:440px;margin-top:6px"><i class="ph ph-bag" style="font-size:42px;color:var(--text-faint)"></i><strong>Nenhuma compra ainda</strong><span class="dim" style="font-size:13px">Suas compras da loja e ingressos aparecem aqui.</span><div class="row gap-10"><a class="btn btn--primary btn--conta" href="/loja"><i class="ph ph-t-shirt"></i> Ir à loja</a><a class="btn btn--conta" href="/eventos" style="border-color:#2a5c8a"><i class="ph ph-confetti"></i> Eventos</a></div></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="orders">${list.map(orderCard).join('')}</div>`;
+})();
+</script>
+</body>
+</html>

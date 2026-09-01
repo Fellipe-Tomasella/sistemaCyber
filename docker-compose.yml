@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: atletica_pg
+    environment:
+      POSTGRES_USER: atletica
+      POSTGRES_PASSWORD: atletica
+      POSTGRES_DB: atletica_hub
+    ports:
+      - "5434:5432"
+    volumes:
+      - atletica_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atletica -d atletica_hub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: atletica_redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - atletica_redis:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: atletica_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: atletica
+      MINIO_ROOT_PASSWORD: atletica123
+    ports:
+      - "9200:9000"
+      - "9201:9001"
+    volumes:
+      - atletica_minio:/data
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set local http://minio:9000 atletica atletica123) do echo 'aguardando minio...'; sleep 1; done;
+      /usr/bin/mc mb -p local/atletica-hub || true;
+      exit 0;"
+
+  backend:
+    build: ./backend
+    container_name: atletica_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://atletica:atletica@postgres:5432/atletica_hub
+      JWT_SECRET: dev_jwt_secret_change_me_00000000000000000000000000000000
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_me_0000000000000000000000000000
+      AES_ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      DOCUMENT_HASH_PEPPER: dev_pepper_change_me_0000000000000000
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: atletica
+      MINIO_SECRET_KEY: atletica123
+      MINIO_BUCKET: atletica-hub
+      CORS_ORIGIN: "*"
+      # E-mail (Gmail com senha de app) — preencha SMTP_USER/SMTP_PASS no arquivo .env
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      APP_URL: ${APP_URL:-http://localhost:4599}
+    ports:
+      - "3200:3000"
+
+  web:
+    build: ./web
+    container_name: atletica_web
+    depends_on:
+      - backend
+    ports:
+      - "8082:80"
+
+volumes:
+  atletica_pg:
+  atletica_redis:
+  atletica_minio:

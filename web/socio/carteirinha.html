@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minha carteirinha — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/conta.css">
+<style>
+  .card-host { max-width:840px; margin:0 auto; width:100%; display:grid; grid-template-columns:minmax(0,440px) 1fr; gap:16px; align-items:start; }
+  @media (max-width:720px){ .card-host { grid-template-columns:1fr; max-width:460px; } }
+  .card { position:relative; overflow:hidden; border-radius:20px; padding:18px; background:radial-gradient(130% 120% at 80% 0%, var(--brand-deep) 0%, #0b1a2c 52%, #0a0d13 100%); border:1px solid #17456f; box-shadow:0 0 40px rgba(0,119,255,0.2); }
+  .card::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(0,191,255,0.08) 0 2px, transparent 2px 32px); }
+  .card__brasao { position:absolute; right:-34px; bottom:-30px; height:190px; width:auto; mix-blend-mode:lighten; opacity:0.34; }
+  .card > .stack { position:relative; gap:14px; }
+  .qr { flex:none; padding:8px; border-radius:12px; background:#f4f7fb; }
+  .qr__grid { width:92px; height:92px; display:grid; grid-template-columns:repeat(21,1fr); grid-template-rows:repeat(21,1fr); }
+  .benefit-row { padding:14px 16px; border-radius:var(--r-xl); background:var(--surface-1); border:1px solid var(--border); display:flex; flex-direction:column; gap:12px; }
+  .benefit-ico { width:32px; height:32px; flex:none; border-radius:9px; background:var(--tint-brand); display:grid; place-items:center; color:var(--brand); }
+</style>
+</head>
+<body>
+<div class="conta">
+  <div class="conta-top" id="contaTop"></div>
+  <div class="conta-body">
+    <div class="card-host" id="cardHost"></div>
+  </div>
+  <nav class="conta-bottom" id="contaBottom"></nav>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+const STLBL = { active:['Ativa','pill--success'], overdue:['Vencida','pill--danger'], expired:['Expirada','pill--danger'], pending:['Pendente','pill--warn'], cancelled:['Cancelada','pill--neutral'] };
+const ROLE = { admin:'Presidência / Admin', finance:'Diretoria Financeira', events:'Diretoria de Eventos', viewer:'Diretoria' };
+
+function renderQR(hostId, seedStr) {
+  let seed = 0; for (const ch of (seedStr || '')) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const n = 21, cells = [];
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const box = (r0, c0) => r >= r0 && r < r0 + 7 && c >= c0 && c < c0 + 7;
+    const fin = box(0, 0) || box(0, 14) || box(14, 0);
+    let on;
+    if (fin) { const r0 = r < 7 ? 0 : 14, c0 = c < 7 ? 0 : 14; const d = Math.max(Math.abs(r - r0 - 3), Math.abs(c - c0 - 3)); on = d === 3 || d <= 1; }
+    else on = ((((r * 31 + c * 17 + r * c * 7) ^ seed) % 11)) < 5;
+    cells.push(`<span style="background:${on ? '#0a0d13' : 'transparent'}"></span>`);
+  }
+  const el = document.getElementById(hostId); if (el) el.innerHTML = cells.join('');
+}
+
+function socioCardHTML(name, ws) {
+  const logo = ws.logoKey ? AH.fileUrl(ws.logoKey) : '../assets/brasao-cyber.jpeg';
+  return `<div class="card">
+    <img class="card__brasao" src="${logo}" alt="">
+    <div class="stack">
+      <div class="row gap-10">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--surface-sidebar);overflow:hidden"><img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 16%;mix-blend-mode:lighten"></div>
+        <div class="stack" style="line-height:1.15"><strong class="display" style="font-size:15px;letter-spacing:0.05em">${AH.escape(ws.name || 'Atlética')}</strong><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-brand-2)">Sócio(a)</span></div>
+        <span class="pill mla" id="c-status"><span class="dot"></span>—</span>
+      </div>
+      <div class="row gap-14" style="align-items:flex-end">
+        <div class="grow stack gap-8">
+          <div class="stack" style="line-height:1.05"><span style="font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted)">Sócio(a)</span><span class="display" style="font-size:26px;line-height:1.02" id="c-name">${AH.escape(name)}</span></div>
+          <div class="row gap-16">
+            <div class="stack" style="line-height:1.2"><span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Matrícula</span><span class="num" style="font-size:12.5px" id="c-mat">—</span></div>
+            <div class="stack" style="line-height:1.2"><span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)">Nº sócio</span><span class="num" style="font-size:12.5px" id="c-num">—</span></div>
+          </div>
+        </div>
+        <div class="qr"><div class="qr__grid" id="qr"></div></div>
+      </div>
+      <div class="row gap-10" style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.12)"><span style="font-size:11px;color:var(--text-brand-2)"><i class="ph ph-shield-check"></i> Código validado pela diretoria · atualiza a cada acesso</span></div>
+    </div>
+  </div>`;
+}
+
+function diretorCardHTML(a, ws) {
+  const logo = ws.logoKey ? AH.fileUrl(ws.logoKey) : '../assets/brasao-cyber.jpeg';
+  const cargo = a.director.cargoLabel || ROLE[a.director.role] || 'Diretoria';
+  return `<div class="card">
+    <img class="card__brasao" src="${logo}" alt="">
+    <div class="stack">
+      <div class="row gap-10">
+        <div style="width:34px;height:34px;flex:none;border-radius:9px;background:var(--surface-sidebar);overflow:hidden"><img src="${logo}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 16%;mix-blend-mode:lighten"></div>
+        <div class="stack" style="line-height:1.15"><strong class="display" style="font-size:15px;letter-spacing:0.05em">${AH.escape(ws.name || 'Atlética')}</strong><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-brand-2)">Diretoria</span></div>
+        <span class="pill pill--brand mla"><span class="dot"></span>Diretoria</span>
+      </div>
+      <div class="row gap-14" style="align-items:flex-end">
+        <div class="grow stack gap-8">
+          <div class="stack" style="line-height:1.05"><span style="font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted)">Membro da diretoria</span><span class="display" style="font-size:26px;line-height:1.02">${AH.escape(a.name)}</span></div>
+          <span class="pill pill--accent" style="align-self:flex-start">${AH.escape(cargo)}</span>
+        </div>
+        <div class="qr"><div class="qr__grid" id="qr"></div></div>
+      </div>
+      <div class="row gap-10" style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.12)"><span style="font-size:11px;color:var(--text-brand-2)"><i class="ph ph-shield-star"></i> Identificação da diretoria</span></div>
+    </div>
+  </div>`;
+}
+
+const benef = [
+  { icon:'ph-ticket', t:'Ingresso no lote sócio' },
+  { icon:'ph-t-shirt', t:'Desconto na loja' },
+  { icon:'ph-trophy', t:'Prioridade em delegação' },
+];
+function benefitsHTML() {
+  return `<div class="benefit-row"><span class="label-cap">Seus benefícios de sócio</span><div class="stack gap-12">` +
+    benef.map(b => `<div class="row gap-12"><span class="benefit-ico"><i class="ph ${b.icon}" style="font-size:17px"></i></span><span style="font-size:13.5px">${b.t}</span><i class="ph ph-check-circle mla" style="font-size:17px;color:var(--success)"></i></div>`).join('') +
+    `</div></div>`;
+}
+
+(async function () {
+  const a = AH.conta.init('carteirinha');
+  if (!a) return;
+  const host = document.getElementById('cardHost');
+  const ws = AH.session.workspace || {};
+
+  if (a.member) {
+    let me = null, card = null;
+    try { [me, card] = await Promise.all([AH.api.get('/me'), AH.api.get('/me/card')]); } catch (e) { AH.toast(e.message, 'err'); }
+    host.innerHTML = socioCardHTML((card && card.name) || a.name, ws) + benefitsHTML();
+    if (me && me.member) {
+      document.getElementById('c-mat').textContent = me.member.registrationNumber || '—';
+      document.getElementById('c-num').textContent = me.member.memberNumber ? String(me.member.memberNumber).padStart(4, '0') : '—';
+      const [lbl, cls] = STLBL[me.member.status] || STLBL.pending;
+      const st = document.getElementById('c-status'); st.className = 'pill ' + cls + ' mla'; st.innerHTML = `<span class="dot"></span>${lbl}`;
+    }
+    renderQR('qr', (card && card.qr) || a.name);
+  } else if (a.director) {
+    host.innerHTML = diretorCardHTML(a, ws) +
+      `<div class="benefit-row"><span class="dim" style="font-size:12.5px">Você é da diretoria. Quer os benefícios de sócio (desconto na loja, lote sócio)? <a href="/seja-socio">Vire sócio também</a>.</span></div>`;
+    renderQR('qr', a.director.id || a.name);
+  } else {
+    host.innerHTML = `<div class="benefit-row" style="align-items:center;text-align:center;gap:10px"><i class="ph ph-identification-badge" style="font-size:40px;color:var(--text-faint)"></i><strong>Você ainda não tem carteirinha</strong><span class="dim" style="font-size:13px">Vire sócio pra ter sua carteirinha digital.</span><a class="btn btn--primary btn--conta" href="/seja-socio">Quero ser sócio</a></div>`;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recuperar senha — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/conta.css">
+<style>
+  body{display:grid;place-items:center;padding:24px;min-height:100vh}
+  .inp{width:100%;background:var(--surface-1);border:1px solid var(--border-strong);border-radius:11px;padding:13px 14px;color:var(--text);font-family:inherit;font-size:14px;outline:none}
+  .inp:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,119,255,.16)}
+</style>
+</head>
+<body>
+<div class="pin-box" style="width:min(430px,100%)">
+  <div style="width:56px;height:56px;border-radius:14px;align-self:center;display:grid;place-items:center;background:var(--tint-brand);color:var(--brand-accent)"><i class="ph-fill ph-lock-key" style="font-size:28px"></i></div>
+  <div class="stack gap-6" style="text-align:center"><h3 id="title">Recuperar senha</h3><span class="dim" id="sub" style="font-size:13px">Digite seu e-mail e enviamos um código.</span></div>
+
+  <div class="stack gap-12" id="step1">
+    <input class="inp" id="email" type="email" placeholder="seu@email.com" autocomplete="email">
+    <button class="btn btn--primary btn--block btn--conta" id="send">Enviar código</button>
+    <a href="/entrar" style="text-align:center;font-size:13px;color:var(--text-dim)"><i class="ph ph-arrow-left"></i> Voltar ao login</a>
+  </div>
+
+  <div class="stack gap-12" id="step2" style="display:none">
+    <input class="inp" id="code" type="text" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" autocomplete="one-time-code" style="text-align:center;letter-spacing:4px">
+    <input class="inp" id="pass" type="password" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
+    <button class="btn btn--primary btn--block btn--conta" id="reset">Redefinir senha</button>
+    <a href="#" id="back" style="text-align:center;font-size:13px;color:var(--text-dim)">Usar outro e-mail</a>
+  </div>
+
+  <div class="pin-err" id="err" style="display:none"></div>
+</div>
+<script src="/js/api.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const slug = new URLSearchParams(location.search).get('slug') || AH.session.slug || 'cyber';
+let email = '';
+
+function showErr(m) { $('err').textContent = m; $('err').style.display = 'block'; }
+
+$('send').onclick = async () => {
+  $('err').style.display = 'none';
+  email = $('email').value.trim();
+  if (!email || !email.includes('@')) { showErr('Digite um e-mail válido.'); return; }
+  const b = $('send'); b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    await AH.api.post('/auth/forgot-password', { email, slug }, { auth: false });
+    $('title').textContent = 'Verifique seu e-mail';
+    $('sub').innerHTML = 'Se existir uma conta com <b style="color:var(--text-soft)">' + AH.escape(email) + '</b>, enviamos um código. Digite abaixo com a nova senha.';
+    $('step1').style.display = 'none'; $('step2').style.display = '';
+    $('code').focus();
+  } catch (e) { showErr(e.message || 'Erro'); }
+  b.disabled = false; b.textContent = 'Enviar código';
+};
+
+$('reset').onclick = async () => {
+  $('err').style.display = 'none';
+  const code = $('code').value.trim(), password = $('pass').value;
+  if (!/^\d{4,6}$/.test(code)) { showErr('Digite o código de 6 dígitos.'); return; }
+  if (!password || password.length < 6) { showErr('A senha deve ter ao menos 6 caracteres.'); return; }
+  const b = $('reset'); b.disabled = true; b.textContent = 'Salvando…';
+  try {
+    await AH.api.post('/auth/reset-password', { email, slug, code, password }, { auth: false });
+    AH.toast('Senha redefinida ✅');
+    setTimeout(() => { location.href = '/entrar?slug=' + encodeURIComponent(slug); }, 800);
+  } catch (e) { showErr(e.message || 'Código inválido'); b.disabled = false; b.textContent = 'Redefinir senha'; }
+};
+
+$('back').onclick = e => { e.preventDefault(); $('step2').style.display = 'none'; $('step1').style.display = ''; $('err').style.display = 'none'; $('title').textContent = 'Recuperar senha'; $('sub').textContent = 'Digite seu e-mail e enviamos um código.'; };
+$('pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('reset').click(); });
+</script>
+</body>
+</html>

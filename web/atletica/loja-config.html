@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loja / White-label — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>
+  .cfg-grid{display:grid;grid-template-columns:1fr 380px;gap:18px}@media(max-width:900px){.cfg-grid{grid-template-columns:1fr}}
+  .swatch{display:flex;align-items:center;gap:10px}
+  .swatch input[type=color]{width:44px;height:38px;border:1px solid var(--border-strong);border-radius:10px;background:none;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero"><div class="hero__row"><div class="stack gap-6"><span class="eyebrow">Loja pública white-label</span><h1>Aparência da loja</h1></div>
+      <div class="row gap-8"><a class="btn" href="site"><i class="ph ph-layout"></i>Editar página inicial</a><a class="btn" id="openStore" target="_blank"><i class="ph ph-arrow-square-out"></i>Abrir loja</a></div></div></header>
+    <div class="page-body"><div class="cfg-grid">
+      <div class="panel" style="display:flex;flex-direction:column;gap:16px">
+        <div class="ah-field"><label>Logo / brasão</label>
+          <div class="row gap-12">
+            <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;background:var(--surface-0);border:1px solid var(--border-strong);flex:none">
+              <img id="logoImg" src="../assets/brasao-cyber.jpeg" style="width:100%;height:100%;object-fit:cover;object-position:50% 16%;mix-blend-mode:lighten">
+            </div>
+            <div class="stack gap-6">
+              <button type="button" class="btn" id="logoBtn"><i class="ph ph-upload-simple"></i>Enviar logo</button>
+              <span class="ah-hint">PNG/JPG até 5MB</span>
+            </div>
+            <input type="file" id="logoFile" accept="image/*" style="display:none">
+          </div>
+        </div>
+        <div class="ah-field"><label>Nome da atlética</label><input id="f-name"></div>
+        <div class="ah-field"><label>Faculdade</label><input id="f-uni"></div>
+        <div class="ah-field"><label>Slug (URL da loja)</label><input id="f-slug" disabled></div>
+        <div class="row gap-16" style="flex-wrap:wrap">
+          <div class="ah-field"><label>Cor primária</label><div class="swatch"><input type="color" id="f-primary"><input id="f-primary-t" style="width:110px"></div></div>
+          <div class="ah-field"><label>Cor de destaque</label><div class="swatch"><input type="color" id="f-accent"><input id="f-accent-t" style="width:110px"></div></div>
+        </div>
+        <button class="btn btn--primary" id="saveBtn" style="align-self:flex-start"><i class="ph ph-check"></i>Salvar aparência</button>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px" id="preview">
+        <span class="label-cap">Preview</span>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border-strong)">
+          <div id="pv-hero" style="padding:24px;background:radial-gradient(120% 120% at 78% 20%, var(--brand-deep) 0%, #0b1a2c 45%, #0a0d13 100%);display:flex;flex-direction:column;gap:10px">
+            <img src="../assets/brasao-cyber.jpeg" style="height:80px;width:auto;mix-blend-mode:lighten;filter:drop-shadow(0 0 30px rgba(0,191,255,0.4))">
+            <strong class="display" id="pv-name" style="font-size:22px">A.A.A.S.I.</strong>
+            <button class="btn btn--primary" style="align-self:flex-start" id="pv-btn"><i class="ph-fill ph-ticket"></i>Garantir ingresso</button>
+          </div>
+        </div>
+        <span class="dim" style="font-size:12px">As cores valem para a loja pública, a carteirinha e os destaques.</span>
+      </div>
+    </div></div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+let WS;
+async function init(){
+  AH.renderRail('loja');
+  try{ WS=(await AH.api.get('/workspace')).workspace; }catch(e){ AH.toast(e.message,'err'); return; }
+  document.getElementById('f-name').value=WS.name||'';
+  document.getElementById('f-uni').value=WS.university||'';
+  document.getElementById('f-slug').value=WS.slug||'';
+  setColor('primary',WS.primaryColor||'#0077ff'); setColor('accent',WS.accentColor||'#00bfff');
+  document.getElementById('openStore').href='/?slug='+WS.slug;
+  if(WS.logoKey){ const u=AH.fileUrl(WS.logoKey); document.getElementById('logoImg').src=u; document.querySelector('#pv-hero img').src=u; }
+  // upload de logo
+  document.getElementById('logoBtn').onclick=()=>document.getElementById('logoFile').click();
+  document.getElementById('logoFile').onchange=async(e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{ const up=await AH.upload(f,'logo'); await AH.api.patch('/workspace',{logoKey:up.key});
+      const u=AH.fileUrl(up.key); document.getElementById('logoImg').src=u; document.querySelector('#pv-hero img').src=u;
+      AH.toast('Logo atualizado ✅'); }catch(err){ AH.toast(err.message,'err'); }
+  };
+  ['primary','accent'].forEach(k=>{
+    document.getElementById('f-'+k).oninput=e=>{document.getElementById('f-'+k+'-t').value=e.target.value;applyPreview();};
+    document.getElementById('f-'+k+'-t').oninput=e=>{document.getElementById('f-'+k).value=e.target.value;applyPreview();};
+  });
+  document.getElementById('f-name').oninput=applyPreview;
+  document.getElementById('saveBtn').onclick=save;
+  applyPreview();
+}
+function setColor(k,v){ document.getElementById('f-'+k).value=v; document.getElementById('f-'+k+'-t').value=v; }
+function applyPreview(){
+  const p=document.getElementById('f-primary').value, a=document.getElementById('f-accent').value;
+  const pv=document.getElementById('preview'); pv.style.setProperty('--brand',p); pv.style.setProperty('--brand-accent',a);
+  pv.style.setProperty('--brand-deep',a);
+  document.getElementById('pv-name').textContent=document.getElementById('f-name').value||'Atlética';
+}
+async function save(){
+  const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Salvando…';
+  try{
+    await AH.api.patch('/workspace',{name:document.getElementById('f-name').value,university:document.getElementById('f-uni').value,primaryColor:document.getElementById('f-primary').value,accentColor:document.getElementById('f-accent').value});
+    AH.toast('Aparência salva ✅');
+    try{ const d=JSON.parse(localStorage.getItem('ah_dir')||'null'); if(d&&d.workspace){ d.workspace.name=document.getElementById('f-name').value; localStorage.setItem('ah_dir',JSON.stringify(d)); } }catch{}
+  }catch(e){ AH.toast(e.message,'err'); }
+  btn.disabled=false; btn.innerHTML='<i class="ph ph-check"></i>Salvar aparência';
+}
+if(AH.guard('director') && AH.guardModule('loja')) init();
+</script>
+</body>
+</html>

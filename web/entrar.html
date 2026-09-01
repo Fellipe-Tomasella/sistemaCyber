@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entrar — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  body { display:grid; place-items:center; padding:24px; background:var(--surface-0); }
+  .login { width:min(1000px, 100%); display:flex; background:var(--surface-0); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-panel); border:1px solid var(--border); }
+  .login__brand { position:relative; overflow:hidden; width:480px; flex:none; padding:44px 40px; display:flex; flex-direction:column; background:var(--hero-radial); }
+  .login__brand::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(0,191,255,0.08) 0 2px, transparent 2px 38px); }
+  .login__brand > * { position:relative; }
+  .login__brasao { margin:20px auto; height:280px; width:auto; mix-blend-mode:lighten; filter:drop-shadow(0 0 60px rgba(0,191,255,0.4)); }
+  .login__form { flex:1; padding:40px; display:flex; flex-direction:column; justify-content:center; gap:18px; min-width:0; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+  .field > span { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); font-weight:600; }
+  .field__box { display:flex; align-items:center; gap:10px; padding:13px 14px; border-radius:11px; border:1px solid var(--border-strong); background:var(--surface-1); font-size:14px; color:var(--text); }
+  .field__box:focus-within { border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,119,255,0.16); }
+  .field__box i { font-size:18px; color:var(--text-dim); }
+  .field__box input { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:inherit; font-size:14px; }
+  .seg { display:flex; padding:4px; gap:4px; background:var(--surface-1); border:1px solid var(--border-strong); border-radius:12px; }
+  .seg button { flex:1; padding:11px; border:none; border-radius:9px; background:transparent; color:var(--text-muted); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:.15s; }
+  .seg button.on { background:var(--brand); color:#fff; box-shadow:0 4px 14px rgba(0,119,255,.35); }
+  .btn-login { font-family:var(--font-ui); font-weight:700; font-size:16px; letter-spacing:0.01em; text-transform:none; padding:15px; box-shadow:var(--shadow-btn-lg); }
+  @media (max-width: 820px){ .login__brand { display:none; } .login { border:none; box-shadow:none; } body { padding:16px; } }
+</style>
+</head>
+<body>
+<div class="login">
+  <div class="login__brand">
+    <div class="stack gap-8">
+      <span style="font-size:11.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--brand-accent);font-weight:600" id="brandTag">A.A.A.S.I. Cyber</span>
+      <h2 class="display" style="font-size:38px;line-height:1.04" id="brandTitle">Sua atlética<br>num só<br>lugar</h2>
+    </div>
+    <img class="login__brasao" src="/assets/brasao-cyber.jpeg" alt="Brasão" id="brandLogo">
+    <div class="stack gap-8" style="margin-top:auto">
+      <span style="font-size:14.5px;color:var(--text-soft)">Ingressos, loja, plano de sócio e carteirinha digital. Uma conta pra tudo.</span>
+    </div>
+  </div>
+
+  <form class="login__form" id="form">
+    <div class="seg" id="seg">
+      <button type="button" data-mode="login" class="on"><i class="ph ph-sign-in"></i> Entrar</button>
+      <button type="button" data-mode="register"><i class="ph ph-user-plus"></i> Criar conta</button>
+    </div>
+
+    <div class="stack" style="gap:4px">
+      <h1 class="display" style="font-size:30px" id="title">Entrar</h1>
+      <span style="font-size:13px;color:var(--text-muted)" id="subtitle">Acesse sua conta da atlética</span>
+    </div>
+
+    <div class="stack gap-14">
+      <label class="field" id="f-name" style="display:none"><span>Nome completo</span><div class="field__box"><i class="ph ph-user"></i><input id="name" placeholder="Seu nome" autocomplete="name"></div></label>
+      <label class="field"><span>E-mail</span><div class="field__box"><i class="ph ph-envelope-simple"></i><input id="email" type="email" placeholder="voce@email.com" autocomplete="email"></div></label>
+      <label class="field"><span>Senha</span><div class="field__box"><i class="ph ph-lock-simple"></i><input id="password" type="password" placeholder="••••••••" autocomplete="current-password"><i class="ph ph-eye" style="cursor:pointer" onclick="const i=this.previousElementSibling;i.type=i.type==='password'?'text':'password'"></i></div></label>
+      <label class="field" id="f-phone" style="display:none"><span>Telefone (opcional)</span><div class="field__box"><i class="ph ph-phone"></i><input id="phone" placeholder="(66) 9 9999-9999" autocomplete="tel"></div></label>
+      <div id="err" style="display:none;font-size:13px;color:var(--danger-soft);background:var(--tint-danger);padding:9px 12px;border-radius:9px"></div>
+    </div>
+
+    <button id="submit" type="submit" class="btn btn--primary btn--block btn-login">Entrar</button>
+
+    <div class="row" style="justify-content:center;font-size:13px;color:var(--text-muted);gap:6px">
+      <span id="switchHint">Ainda não tem conta?</span><a href="#" id="switchLink" style="font-weight:600">Criar conta</a>
+    </div>
+    <div class="row" style="justify-content:center;font-size:12.5px;margin-top:-8px" id="forgotRow"><a id="forgotLink" href="#" style="color:var(--text-dim)">Esqueci minha senha</a></div>
+
+    <div class="row gap-10" style="padding:13px 15px;border-radius:12px;background:var(--surface-1);border:1px solid var(--border)">
+      <i class="ph ph-storefront" style="font-size:20px;color:var(--brand-accent)"></i>
+      <span class="grow" style="font-size:13px;color:#a9bacd">Só quer olhar a loja?</span>
+      <a href="/" style="font-size:13px;font-weight:600">Voltar ao site</a>
+    </div>
+  </form>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const qs = new URLSearchParams(location.search);
+const slug = qs.get('slug') || AH.session.slug || 'cyber';
+const next = qs.get('next') || '/socio/home';
+let mode = 'login';
+
+// já logado? vai direto
+if (AH.session.isLoggedIn) location.replace(next);
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.mode === m));
+  const reg = m === 'register';
+  $('title').textContent = reg ? 'Criar conta' : 'Entrar';
+  $('subtitle').textContent = reg ? 'Rápido — só pra guardar suas compras e sua carteirinha' : 'Acesse sua conta da atlética';
+  $('f-name').style.display = reg ? '' : 'none';
+  $('f-phone').style.display = reg ? '' : 'none';
+  $('password').autocomplete = reg ? 'new-password' : 'current-password';
+  $('submit').textContent = reg ? 'Criar minha conta' : 'Entrar';
+  $('switchHint').textContent = reg ? 'Já tem conta?' : 'Ainda não tem conta?';
+  $('switchLink').textContent = reg ? 'Entrar' : 'Criar conta';
+  $('forgotRow').style.display = reg ? 'none' : '';
+  $('err').style.display = 'none';
+}
+document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+$('switchLink').onclick = e => { e.preventDefault(); setMode(mode === 'login' ? 'register' : 'login'); };
+$('forgotLink').onclick = e => { e.preventDefault(); location.href = '/recuperar?slug=' + encodeURIComponent(slug); };
+
+// branding da atlética (nome + logo), com fallback estático
+(async () => {
+  try {
+    const d = await AH.api.get('/store/' + slug, { auth: false });
+    const ws = d && d.workspace;
+    if (ws) {
+      if (ws.name) { $('brandTag').textContent = ws.name; document.title = 'Entrar — ' + ws.name; }
+      if (ws.logoKey) $('brandLogo').src = AH.fileUrl(ws.logoKey);
+    }
+  } catch {}
+})();
+
+$('form').onsubmit = async e => {
+  e.preventDefault();
+  const err = $('err'), btn = $('submit');
+  err.style.display = 'none';
+  const email = $('email').value.trim(), password = $('password').value;
+  if (!email || !password) { err.textContent = 'Preencha e-mail e senha.'; err.style.display = 'block'; return; }
+  btn.disabled = true; const label = btn.textContent; btn.textContent = mode === 'register' ? 'Criando…' : 'Entrando…';
+  try {
+    if (mode === 'register') {
+      const name = $('name').value.trim();
+      if (!name) throw new Error('Informe seu nome.');
+      await AH.register({ slug, name, email, password, phone: $('phone').value.trim() || undefined });
+      location.href = '/verificar?next=' + encodeURIComponent(next);  // confirma o e-mail primeiro
+      return;
+    }
+    await AH.login(email, password, slug);
+    // super-admin cai direto na gestão (a menos que haja um destino explícito)
+    const acc = AH.session.account;
+    location.href = (acc && acc.isSuperAdmin && next === '/socio/home') ? '/gestao' : next;
+  } catch (ex) {
+    err.textContent = ex.message || 'Não foi possível entrar.'; err.style.display = 'block';
+    btn.disabled = false; btn.textContent = label;
+  }
+};
+
+setMode(qs.get('mode') === 'register' ? 'register' : 'login');
+</script>
+</body>
+</html>

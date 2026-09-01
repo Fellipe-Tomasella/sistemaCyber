@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Entrar — AtléticaHub</title>
+<script>
+  // Login unificado agora vive em /entrar
+  const p = new URLSearchParams(location.search);
+  const slug = p.get('slug');
+  location.replace('/entrar' + (slug ? '?slug=' + encodeURIComponent(slug) : ''));
+</script>
+</head>
+<body></body>
+</html>

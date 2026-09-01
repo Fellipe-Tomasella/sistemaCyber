@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel da diretoria — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/conta.css">
+<style>body{display:grid;place-items:center;padding:24px;min-height:100vh}</style>
+</head>
+<body>
+<div class="pin-box" style="width:min(410px,100%)">
+  <img src="../assets/brasao-cyber.jpeg" alt="Brasão" style="height:88px;width:auto;align-self:center;mix-blend-mode:lighten;filter:drop-shadow(0 0 30px rgba(0,191,255,.4))">
+  <div class="stack gap-6" style="text-align:center"><h3 id="title">Painel da diretoria</h3><span class="dim" id="subtitle" style="font-size:13px">Digite seu PIN pra abrir o painel.</span></div>
+  <div id="body"></div>
+</div>
+<script src="../js/api.js"></script>
+<script>
+const qs = new URLSearchParams(location.search);
+const next = qs.get('next') || '/atletica/dashboard';
+const body = document.getElementById('body'), title = document.getElementById('title'), sub = document.getElementById('subtitle');
+
+if (AH.session.isElevated) location.replace(next);
+else if (!AH.session.isLoggedIn) location.replace('/entrar?next=' + encodeURIComponent(next));
+else render();
+
+function render() {
+  const a = AH.session.account;
+  if (!a || !a.director) {
+    title.textContent = 'Sem acesso ao painel';
+    sub.textContent = 'Sua conta não é da diretoria.';
+    body.innerHTML = `<div class="stack gap-10"><a class="btn btn--primary btn--block btn--conta" href="/socio/home">Ir pra minha conta</a><button class="btn btn--block" id="out">Sair da conta</button></div>`;
+    document.getElementById('out').onclick = async () => { await AH.logout(); location.href = '/entrar'; };
+    return;
+  }
+  const create = !a.director.pinSet;
+  title.textContent = create ? 'Criar PIN da diretoria' : 'Painel da diretoria';
+  sub.textContent = create ? 'Primeiro acesso — crie um PIN de 4 a 8 dígitos.' : 'Olá, ' + (a.name || '').split(' ')[0] + '. Digite seu PIN pra abrir o painel.';
+  body.innerHTML = `<div class="stack gap-12">
+    <input class="pin-input" id="pinA" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+    ${create ? '<input class="pin-input" id="pinB" type="password" inputmode="numeric" maxlength="8" placeholder="repita o PIN" autocomplete="off">' : ''}
+    <div class="pin-err" id="err" style="display:none"></div>
+    <button class="btn btn--primary btn--block btn--conta" id="go">${create ? 'Criar PIN e entrar' : 'Abrir painel'}</button>
+    <a href="/socio/home" style="text-align:center;font-size:13px;color:var(--text-dim)"><i class="ph ph-arrow-left"></i> Voltar pra minha conta</a>
+  </div>`;
+  const pinA = document.getElementById('pinA'), pinB = document.getElementById('pinB'), err = document.getElementById('err'), go = document.getElementById('go');
+  setTimeout(() => pinA.focus(), 40);
+  async function submit() {
+    const va = pinA.value.trim();
+    if (!/^\d{4,8}$/.test(va)) { err.textContent = 'O PIN deve ter de 4 a 8 dígitos.'; err.style.display = 'block'; return; }
+    if (create && va !== (pinB.value || '').trim()) { err.textContent = 'Os PINs não conferem.'; err.style.display = 'block'; return; }
+    go.disabled = true; const lbl = go.textContent; go.textContent = 'Aguarde…';
+    try {
+      if (create) await AH.setDirectorPin(va);
+      await AH.unlockDirector(va);
+      location.href = next;
+    } catch (e) { err.textContent = e.message || 'PIN incorreto'; err.style.display = 'block'; go.disabled = false; go.textContent = lbl; }
+  }
+  go.onclick = submit;
+  (pinB || pinA).addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+}
+</script>
+</body>
+</html>

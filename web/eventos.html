@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventos — A.A.A.S.I. Cyber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/store.css">
+</head>
+<body>
+<div class="store">
+  <div id="siteNav"></div>
+  <section class="hero-store" style="padding:34px 32px 28px">
+    <div class="hero-store__row">
+      <div class="grow stack gap-8">
+        <span class="eyebrow" id="count">Eventos</span>
+        <h1 style="font-size:clamp(34px,4vw,54px)">Eventos &amp; festas</h1>
+        <p style="margin:0;color:#a9bacd;font-size:15px">Garanta seu ingresso — sócio tem preço especial.</p>
+      </div>
+    </div>
+  </section>
+  <section class="section"><div id="events" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px"></div></section>
+  <footer id="siteFooter"></footer>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/store.js"></script>
+<script>
+(async function () {
+  const d = await AH.store.init('eventos');
+  const host = document.getElementById('events');
+  if (!d) { host.innerHTML = '<div class="dim">Indisponível.</div>'; return; }
+  document.getElementById('count').textContent = `${d.events.length} ${d.events.length === 1 ? 'evento aberto' : 'eventos abertos'}`;
+  host.innerHTML = d.events.length ? d.events.map(ev => {
+    const dt = ev.eventDate ? new Date(ev.eventDate) : null;
+    const batches = (ev.batches || []).filter(b => b.active !== false);
+    return `<div class="ev-card">
+      <div class="row gap-10"><span class="pill pill--accent">Vendendo</span><span class="dim" style="font-size:12px">${dt ? dt.toLocaleString('pt-BR') : ''} · ${AH.escape(ev.location || '')}</span></div>
+      <strong class="display" style="font-size:26px">${AH.escape(ev.name)}</strong>
+      ${ev.description ? `<p class="dim" style="margin:0;font-size:13px">${AH.escape(ev.description)}</p>` : ''}
+      <div class="stack gap-8">${batches.length ? batches.map(b => AH.store.eventBatchRow(ev, b)).join('') : '<span class="dim" style="font-size:12px">Ingressos em breve.</span>'}</div>
+    </div>`;
+  }).join('') : '<div class="ah-empty"><i class="ph ph-confetti"></i><span>Nenhum evento à venda no momento.</span></div>';
+})();
+</script>
+</body>
+</html>

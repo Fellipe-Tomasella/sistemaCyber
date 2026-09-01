@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retirada — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .ret-grid { flex:1; display:grid; grid-template-columns:1fr 340px; gap:20px; min-height:0; padding:24px 28px; }
+  .scan { display:flex; align-items:center; gap:12px; padding:0 20px; height:66px; border-radius:var(--r-xl); background:var(--surface-1); border:1px solid var(--border-strong); }
+  .scan input { flex:1; background:none; border:none; outline:none; color:var(--text); font-family:inherit; font-size:19px; }
+  .scan input::placeholder { color:var(--text-faint); }
+  .order-card { flex:1; border-radius:var(--r-2xl); background:var(--surface-1); border:1px solid #17456f; display:flex; flex-direction:column; overflow:hidden; min-height:0; box-shadow:0 0 0 1px rgba(0,191,255,0.12), 0 0 40px rgba(0,119,255,0.14); }
+  .item-row { display:flex; align-items:center; gap:14px; padding:12px 22px; border-top:1px solid var(--border-hair); }
+  .chk { width:26px; height:26px; flex:none; border-radius:8px; display:grid; place-items:center; color:var(--brand-ink); }
+  .item-ico { width:46px; height:46px; flex:none; border-radius:10px; background:var(--surface-2); border:1px solid var(--border-strong); display:grid; place-items:center; color:var(--text-faint); }
+  .queue-row { display:flex; align-items:center; gap:11px; padding:11px 18px; border-bottom:1px solid var(--border-hair); }
+  @media (max-width:1100px){ .ret-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow">Balcão · Campus Sinop · 21/08</span><h1>Retirada de produtos</h1></div>
+        <div class="row gap-18" style="flex:none">
+          <div class="stack" style="align-items:flex-end;line-height:1.05"><span class="display num" style="font-size:34px;color:var(--success)" id="cnt-done">0</span><span style="font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted)">entregues hoje</span></div>
+          <div class="stack" style="align-items:flex-end;line-height:1.05"><span class="display num" style="font-size:34px;color:var(--warn)" id="cnt-queue">0</span><span style="font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted)">na fila</span></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="ret-grid">
+      <!-- coluna principal -->
+      <div class="stack gap-18" style="min-height:0">
+        <div class="row gap-14">
+          <div class="scan grow"><i class="ph ph-magnifying-glass" style="font-size:24px;color:var(--brand-accent)"></i><input id="scanInput" placeholder="Bipe o QR ou digite CPF / nº do pedido" autofocus><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);padding:4px 9px;border:1px solid var(--border-strong);border-radius:7px">Enter</span></div>
+          <button class="btn btn--primary" id="scanBtn" style="height:66px;padding:0 22px;font-family:var(--font-display);font-size:18px;letter-spacing:0.05em;text-transform:uppercase;box-shadow:0 8px 26px rgba(0,119,255,0.45)"><i class="ph-fill ph-qr-code" style="font-size:24px"></i>Buscar</button>
+        </div>
+
+        <div class="order-card" id="orderCard">
+          <div class="stack" style="place-items:center;justify-content:center;flex:1;gap:12px;color:var(--text-faint)">
+            <i class="ph ph-package" style="font-size:56px"></i>
+            <span style="font-size:15px">Busque um pedido por QR, CPF ou número</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- fila -->
+      <div class="panel panel--pad0" style="display:flex;flex-direction:column;overflow:hidden;min-height:0">
+        <div class="row" style="justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border)"><strong class="panel__title">Fila de retirada</strong><span class="pill pill--warn">31</span></div>
+        <div class="grow" style="overflow:auto" id="fila"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+let current = null;
+const ICO = { product:'ph-t-shirt', ticket:'ph-ticket', plan:'ph-identification-badge' };
+
+async function init() {
+  AH.renderRail('retirada');
+  document.getElementById('scanBtn').addEventListener('click', doLookup);
+  document.getElementById('scanInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+  loadQueue();
+}
+
+async function loadQueue() {
+  let q;
+  try { q = await AH.api.get('/pickup/queue'); } catch { return; }
+  document.getElementById('cnt-queue').textContent = q.queue.length;
+  const host = document.getElementById('fila');
+  host.innerHTML = q.queue.length ? q.queue.map(o => `
+    <div class="queue-row" data-q="${o.orderNumber}" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'" style="cursor:pointer">
+      <span class="display" style="font-size:15px;color:var(--text-faint);width:52px">#${o.orderNumber}</span>
+      <div class="grow stack" style="line-height:1.3"><span class="ellipsis" style="font-size:13px;font-weight:500">${AH.escape(o.buyerName||'—')}</span><span style="font-size:11.5px;color:var(--text-dim)">${AH.fmtBRL(o.totalCents)} · ${o.fulfillmentStatus==='ready'?'pronto':'aberto'}</span></div>
+      <i class="ph ph-caret-right" style="font-size:15px;color:var(--text-faint)"></i>
+    </div>`).join('') : '<div class="dim" style="padding:20px;font-size:13px">Fila vazia 🎉</div>';
+  host.querySelectorAll('.queue-row').forEach(r => r.addEventListener('click', () => { document.getElementById('scanInput').value = r.dataset.q; doLookup(); }));
+}
+
+async function doLookup() {
+  const q = document.getElementById('scanInput').value.trim();
+  if (!q) return;
+  let d;
+  try { d = await AH.api.get('/pickup/lookup?q=' + encodeURIComponent(q)); }
+  catch (e) { AH.toast(e.message || 'Não encontrado', 'err'); return; }
+  current = d;
+  renderOrder(d);
+}
+
+function renderOrder(d) {
+  const o = d.order, items = d.items;
+  const delivered = o.fulfillmentStatus === 'delivered';
+  const paid = o.paymentStatus === 'paid';
+  document.getElementById('orderCard').innerHTML = `
+    <div class="row gap-16" style="padding:18px 22px;background:linear-gradient(120deg, rgba(0,119,255,0.2), transparent);border-bottom:1px solid var(--border)">
+      <div class="avatar avatar--lg" style="width:56px;height:56px;font-size:20px">${AH.initials(o.buyerName||'?')}</div>
+      <div class="grow stack gap-6">
+        <div class="row gap-10"><strong style="font-size:21px;font-weight:600">${AH.escape(o.buyerName||'Cliente')}</strong>${o.buyerMemberId?'<span class="pill pill--success">Sócio</span>':'<span class="pill pill--neutral">Fã</span>'}</div>
+        <span style="font-size:13px;color:var(--text-muted)">${paid?'Pago':'<span style=\"color:var(--warn)\">Aguardando pagamento</span>'} · ${o.channel==='store'?'loja':'balcão'}</span>
+      </div>
+      <div style="flex:none;text-align:right;line-height:1.2">
+        <div class="display" style="font-size:26px;letter-spacing:0.03em">#${o.orderNumber}</div>
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted)">${delivered?'entregue':paid?'pronto':'pendente'}</div>
+      </div>
+    </div>
+    <div class="grow stack" style="overflow:auto">
+      <div class="row" style="justify-content:space-between;padding:13px 22px 9px"><span class="label-cap">Itens do pedido</span><span style="font-size:12.5px;color:var(--text-muted)">${items.length} ${items.length===1?'item':'itens'}</span></div>
+      ${items.map(it => `
+        <div class="item-row">
+          <span class="chk" style="border:2px solid ${it.pickedUpAt||delivered?'#22c55e':'var(--border-strong)'};background:${it.pickedUpAt||delivered?'#22c55e':'transparent'}"><i class="ph-fill ph-check" style="font-size:15px;opacity:${it.pickedUpAt||delivered?1:0}"></i></span>
+          <span class="item-ico"><i class="ph ${ICO[it.kind]||'ph-package'}" style="font-size:21px"></i></span>
+          <div class="grow stack" style="line-height:1.3"><span style="font-size:15px;font-weight:600">${AH.escape(it.description)}</span><span style="font-size:12.5px;color:var(--text-dim)">${it.kind}</span></div>
+          <span class="display" style="font-size:20px;color:var(--text-soft)">×${it.quantity}</span>
+          <span class="num" style="width:84px;text-align:right;font-size:13.5px;font-weight:600;color:var(--text-muted)">${AH.fmtBRL(it.subtotalCents)}</span>
+        </div>`).join('')}
+    </div>
+    <div class="row gap-14" style="padding:16px 22px;border-top:1px solid var(--border);background:var(--surface-3)">
+      <div class="stack" style="line-height:1.25"><span class="label-cap">Total do pedido</span><span class="display num" style="font-size:26px">${AH.fmtBRL(o.totalCents)}</span></div>
+      ${delivered
+        ? '<span class="pill pill--success mla" style="font-size:13px;padding:10px 18px"><i class="ph-fill ph-check-circle"></i> Já entregue</span>'
+        : !paid
+          ? `<button class="btn btn--success mla" onclick="payThenDeliver('${o.id}')" style="font-family:var(--font-display);font-size:16px;letter-spacing:0.05em;text-transform:uppercase;padding:14px 22px"><i class="ph-fill ph-check-circle" style="font-size:22px"></i>Confirmar pagamento</button>`
+          : `<button class="btn btn--success mla" onclick="deliver('${o.id}')" style="font-family:var(--font-display);font-size:19px;letter-spacing:0.05em;text-transform:uppercase;padding:14px 26px"><i class="ph-fill ph-check-circle" style="font-size:24px"></i>Marcar entregue</button>`}
+    </div>`;
+}
+
+async function deliver(id) {
+  try { await AH.api.post('/orders/' + id + '/deliver', {}); AH.toast('Produtos entregues ✅'); }
+  catch (e) { AH.toast(e.message, 'err'); return; }
+  document.getElementById('cnt-done').textContent = (parseInt(document.getElementById('cnt-done').textContent)||0) + 1;
+  document.getElementById('scanInput').value = ''; document.getElementById('scanInput').focus();
+  document.getElementById('orderCard').innerHTML = '<div class="stack" style="place-items:center;justify-content:center;flex:1;gap:12px;color:var(--success)"><i class="ph-fill ph-check-circle" style="font-size:56px"></i><span style="font-size:15px">Entregue! Próximo pedido…</span></div>';
+  loadQueue();
+}
+async function payThenDeliver(id) {
+  try { await AH.api.post('/orders/' + id + '/pay', {}); AH.toast('Pagamento confirmado'); await doLookup(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+window.deliver = deliver; window.payThenDeliver = payThenDeliver;
+
+if (AH.guard('director') && AH.guardModule('pedidos')) init();
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financeiro — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .fin-grid { flex:1; display:grid; grid-template-columns:1fr 372px; gap:18px; min-height:0; padding:20px 28px 24px; }
+  .lanc-head, .lanc-row { display:grid; grid-template-columns:66px 1fr 140px 92px 118px 96px; gap:12px; align-items:center; }
+  .lanc-row .acts{display:flex;gap:4px;justify-content:flex-end;opacity:.55;transition:opacity .12s}
+  .lanc-row:hover .acts{opacity:1}
+  .lanc-row .acts button{width:28px;height:28px;border-radius:7px;border:1px solid var(--border-strong);background:var(--surface-1);color:var(--text-soft);cursor:pointer;display:grid;place-items:center;font-size:15px}
+  .lanc-row .acts button:hover{border-color:var(--brand-accent);color:#fff}
+  .lanc-row .acts button.pay:hover{border-color:var(--success);color:var(--success)}
+  .lanc-row .acts button.del:hover{border-color:var(--danger-soft);color:var(--danger-soft)}
+  .dre-line { display:flex; align-items:center; gap:10px; font-size:12.5px; }
+  .dre-line .fill { flex:1; height:1px; background:var(--border); }
+  @media (max-width:1200px){ .fin-grid { grid-template-columns:1fr; } }
+  @media (max-width:720px){ .lanc-head span:nth-child(3), .lanc-row > *:nth-child(3){ display:none; } .lanc-head, .lanc-row { grid-template-columns:56px 1fr 84px 92px 84px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow">Financeiro · 2º semestre 2026</span><h1>Caixa e DRE</h1></div>
+        <div class="row gap-8" style="flex:none;flex-wrap:wrap">
+          <select id="period" class="btn" style="padding-right:10px"><option value="all">Todo o período</option><option value="month">Este mês</option><option value="pending">Só pendentes</option><option value="overdue">Vencidas</option></select>
+          <button class="btn" id="exportBtn"><i class="ph ph-export"></i>Exportar</button>
+          <button class="btn" id="ccBtn"><i class="ph ph-tag"></i>Centros & categorias</button>
+          <button class="btn btn--primary" id="newBtn"><i class="ph ph-plus"></i>Novo lançamento</button>
+        </div>
+      </div>
+      <div class="kpi-strip" style="margin-top:18px">
+        <div class="kpi-strip__cell kpi-strip__cell--accent"><span class="kpi-strip__k" style="color:#b4d3ff">Saldo em caixa</span><span class="kpi-strip__v" style="color:#fff;font-size:36px" id="k-saldo">—</span></div>
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Entradas</span><span class="kpi-strip__v" style="color:var(--success);font-size:36px" id="k-in">—</span></div>
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Saídas</span><span class="kpi-strip__v" style="color:var(--danger-soft);font-size:36px" id="k-out">—</span></div>
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Resultado</span><span class="kpi-strip__v" style="font-size:36px" id="k-res">—</span></div>
+      </div>
+    </header>
+
+    <div class="fin-grid">
+      <!-- LANÇAMENTOS -->
+      <div class="panel panel--pad0" style="display:flex;flex-direction:column;overflow:hidden;min-height:0">
+        <div class="row gap-12" style="padding:15px 18px;border-bottom:1px solid var(--border)">
+          <strong class="panel__title--display">Lançamentos</strong>
+          <div class="search mla" style="width:210px"><i class="ph ph-magnifying-glass" style="font-size:15px"></i><input id="fin-search" placeholder="Buscar descrição…"></div>
+          <span style="font-size:12px;color:var(--text-dim)" id="lanc-count">—</span>
+        </div>
+        <div class="lanc-head" style="padding:9px 18px;background:var(--surface-3);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600">
+          <span>Data</span><span>Descrição</span><span>Centro de custo</span><span>Tipo</span><span style="text-align:right">Valor</span><span style="text-align:right">Ações</span>
+        </div>
+        <div class="grow" style="overflow:auto" id="lanc"></div>
+      </div>
+
+      <!-- DRE + Centros -->
+      <div class="stack gap-14" style="min-height:0">
+        <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+          <strong class="panel__title--display">DRE simplificado</strong>
+          <div class="stack gap-8">
+            <span style="font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--success);font-weight:600">Receitas</span>
+            <div class="stack gap-8" id="dre-rec"></div>
+            <div class="row" style="justify-content:space-between;padding-top:7px;border-top:1px solid var(--border);font-size:13px;font-weight:600"><span>Total de receitas</span><span class="num" style="color:var(--success)" id="dre-rec-total">—</span></div>
+          </div>
+          <div class="stack gap-8">
+            <span style="font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--danger-soft);font-weight:600">Despesas</span>
+            <div class="stack gap-8" id="dre-desp"></div>
+            <div class="row" style="justify-content:space-between;padding-top:7px;border-top:1px solid var(--border);font-size:13px;font-weight:600"><span>Total de despesas</span><span class="num" style="color:var(--danger-soft)" id="dre-desp-total">—</span></div>
+          </div>
+          <div class="row" style="justify-content:space-between;padding:12px 14px;border-radius:var(--r-lg);background:linear-gradient(120deg, rgba(0,119,255,0.24), rgba(0,119,255,0.05));border:1px solid #17456f">
+            <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#b4d3ff;font-weight:600">Resultado</span>
+            <span class="display num" style="font-size:28px;color:#fff" id="dre-res">—</span>
+          </div>
+        </div>
+
+        <div class="panel" style="display:flex;flex-direction:column;gap:11px">
+          <strong class="panel__title">Centros de custo</strong>
+          <div class="stack gap-10" id="centros"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+let ALL = [], CCS = [], CCMAP = {}, CATS = [], CATMAP = {}, RECURRING = [], PERIOD = 'all', SEARCH = '';
+const TYPES = [{ value:'income', label:'Entrada' }, { value:'expense', label:'Saída' }];
+const STATUSES = [{ value:'paid', label:'Pago' }, { value:'pending', label:'Pendente' }];
+const set = (id, v) => document.getElementById(id).textContent = v;
+
+async function init() {
+  AH.renderRail('financeiro');
+  document.getElementById('newBtn').onclick = () => txForm();
+  document.getElementById('ccBtn').onclick = manageModal;
+  document.getElementById('exportBtn').onclick = exportCSV;
+  document.getElementById('period').onchange = e => { PERIOD = e.target.value; render(); };
+  const s = document.getElementById('fin-search'); if (s) s.oninput = e => { SEARCH = e.target.value.trim().toLowerCase(); render(); };
+  await load();
+}
+async function load() {
+  try {
+    const [tx, ccs, cats, rec] = await Promise.all([AH.api.get('/transactions'), AH.api.get('/cost-centers'), AH.api.get('/finance-categories'), AH.api.get('/recurring')]);
+    ALL = tx.transactions; CCS = ccs.costCenters; CCMAP = {}; CCS.forEach(c => CCMAP[c.id] = c);
+    CATS = cats.categories; CATMAP = {}; CATS.forEach(c => CATMAP[c.id] = c);
+    RECURRING = rec.recurring;
+  } catch (e) { AH.toast(e.message, 'err'); return; }
+  render();
+}
+function filtered() {
+  let rows = ALL;
+  const today = new Date().toISOString().slice(0, 10);
+  if (PERIOD === 'pending') rows = rows.filter(r => r.status !== 'paid');
+  else if (PERIOD === 'overdue') rows = rows.filter(r => r.status !== 'paid' && r.dueDate && r.dueDate < today);
+  else if (PERIOD === 'month') { const k = today.slice(0, 7); rows = rows.filter(r => r.date.startsWith(k)); }
+  if (SEARCH) rows = rows.filter(r => r.description.toLowerCase().includes(SEARCH));
+  return rows;
+}
+function render() {
+  const rows = filtered();
+  let saldo = 0; ALL.forEach(r => { if (r.status === 'paid') saldo += (r.type === 'income' ? 1 : -1) * r.amountCents; });
+  let income = 0, expense = 0; rows.forEach(r => r.type === 'income' ? income += r.amountCents : expense += r.amountCents);
+  const result = income - expense;
+  set('k-saldo', AH.fmtBRLk(saldo)); set('k-in', AH.fmtBRLk(income)); set('k-out', AH.fmtBRLk(expense)); set('k-res', (result>=0?'+':'') + AH.fmtBRLk(result));
+  set('lanc-count', rows.length + ' registros');
+
+  document.getElementById('lanc').innerHTML = rows.length ? rows.map(rowHTML).join('') : '<div class="dim" style="padding:24px;font-size:13px">Nenhum lançamento neste filtro.</div>';
+
+  const byCC = (type) => {
+    const g = {};
+    rows.filter(r => r.type === type).forEach(r => { const n = CCMAP[r.costCenterId]?.name || 'Outros'; g[n] = (g[n]||0) + r.amountCents; });
+    return Object.entries(g).sort((a,b) => b[1]-a[1]);
+  };
+  const dreHTML = a => a.map(([l,v]) => `<div class="dre-line"><span style="color:#a9bacd">${AH.escape(l)}</span><span class="fill"></span><span class="num" style="font-weight:600">${AH.fmtBRL(v)}</span></div>`).join('') || '<span class="dim" style="font-size:12px">—</span>';
+  document.getElementById('dre-rec').innerHTML = dreHTML(byCC('income'));
+  document.getElementById('dre-desp').innerHTML = dreHTML(byCC('expense'));
+  set('dre-rec-total', AH.fmtBRL(income)); set('dre-desp-total', AH.fmtBRL(expense)); set('dre-res', (result>=0?'+':'') + AH.fmtBRL(result));
+
+  const desp = byCC('expense'); const td = desp.reduce((s,[,v]) => s+v, 0) || 1;
+  document.getElementById('centros').innerHTML = desp.length ? desp.map(([l,v]) => {
+    const c = CCS.find(x => x.name === l); const color = c ? c.color : 'var(--text-dim)'; const pct = Math.round(v/td*100);
+    return `<div class="row gap-10" style="font-size:12.5px"><span style="width:9px;height:9px;flex:none;border-radius:2px;background:${color}"></span><span style="color:var(--text-soft)" class="ellipsis">${AH.escape(l)}</span><span class="meter grow"><span style="width:${pct}%;background:${color}"></span></span><span class="num" style="width:62px;text-align:right;color:var(--text-muted)">${AH.fmtBRLk(v)}</span></div>`;
+  }).join('') : '<span class="dim" style="font-size:12px">Sem despesas</span>';
+}
+function rowHTML(r) {
+  const cc = CCMAP[r.costCenterId]; const cat = CATMAP[r.categoryId]; const isIn = r.type === 'income'; const pend = r.status !== 'paid';
+  return `<div class="lanc-row" style="padding:11px 18px;border-bottom:1px solid var(--border-hair);font-size:13px">
+    <span class="num" style="color:var(--text-dim)">${AH.fmtDate(r.date).slice(0,5)}</span>
+    <span class="ellipsis" style="font-weight:500">${AH.escape(r.description)}</span>
+    <span class="row gap-8" style="font-size:12px;color:#a9bacd;overflow:hidden"><span style="width:8px;height:8px;flex:none;border-radius:2px;background:${cc?cc.color:'var(--text-dim)'}"></span><span class="ellipsis">${AH.escape(cc?cc.name:'—')}${cat?' · '+AH.escape(cat.name):''}</span></span>
+    <span class="pill ${isIn?'pill--success':'pill--danger'}" style="justify-self:start">${isIn?'Entrada':'Saída'}</span>
+    <span class="num" style="text-align:right;font-weight:600;color:${isIn?'var(--success)':'var(--danger-soft)'}">${pend?`<i class="ph ph-clock" style="color:var(--warn);font-size:12px;margin-right:3px" title="pendente${r.dueDate?' · vence '+AH.fmtDate(r.dueDate):''}"></i>`:''}${AH.fmtBRL(r.amountCents)}</span>
+    <span class="acts">
+      ${pend?`<button class="pay" title="Marcar pago" onclick="payTx('${r.id}')"><i class="ph ph-check"></i></button>`:''}
+      <button title="Editar" onclick="editTx('${r.id}')"><i class="ph ph-pencil-simple"></i></button>
+      <button class="del" title="Excluir" onclick="delTx('${r.id}')"><i class="ph ph-trash"></i></button>
+    </span>
+  </div>`;
+}
+const ccOptions = () => [{ value:'', label:'— nenhum —' }, ...CCS.map(c => ({ value:c.id, label:c.name }))];
+const catOptions = () => [{ value:'', label:'— nenhuma —' }, ...CATS.map(c => ({ value:c.id, label:c.name + (c.type==='income'?' (entrada)':' (saída)') }))];
+function txForm(tx) {
+  const edit = !!tx;
+  AH.formModal({
+    title: edit ? 'Editar lançamento' : 'Novo lançamento',
+    fields: [
+      { name:'type', label:'Tipo', type:'select', options:TYPES, value: tx?.type || 'expense' },
+      { name:'description', label:'Descrição', required:true, value: tx?.description },
+      { name:'amountCents', label:'Valor (R$)', type:'money', required:true, value: tx ? (tx.amountCents/100) : '' },
+      { name:'date', label:'Data', value: tx ? tx.date.slice(0,10) : new Date().toISOString().slice(0,10), required:true, hint:'aaaa-mm-dd' },
+      { name:'costCenterId', label:'Centro de custo', type:'select', options:ccOptions(), value: tx?.costCenterId || '' },
+      { name:'categoryId', label:'Categoria', type:'select', options:catOptions(), value: tx?.categoryId || '' },
+      { name:'status', label:'Situação', type:'select', options:STATUSES, value: tx?.status || 'paid' },
+      { name:'dueDate', label:'Vencimento (conta a pagar/receber)', value: tx?.dueDate ? tx.dueDate.slice(0,10) : '', hint:'aaaa-mm-dd — opcional, use com situação Pendente' },
+      { name:'paymentMethod', label:'Forma de pagamento', value: tx?.paymentMethod, placeholder:'pix, dinheiro, cartão…' },
+      ...(edit ? [] : [{ name:'recurring', label:'🔁 Repetir todo mês (conta fixa) — gera uma pendência por mês', type:'checkbox', value:false }]),
+    ],
+    onSubmit: async (v) => {
+      const payload = { type:v.type, description:v.description, amountCents:v.amountCents, date:v.date, costCenterId:v.costCenterId||undefined, categoryId:v.categoryId||undefined, dueDate:v.dueDate||undefined, paymentMethod:v.paymentMethod, status:v.status };
+      if (edit) await AH.api.patch('/transactions/'+tx.id, payload); else await AH.api.post('/transactions', payload);
+      if (!edit && v.recurring) {
+        const day = new Date(v.date + 'T00:00:00').getDate();
+        await AH.api.post('/recurring', { description:v.description, amountCents:v.amountCents, type:v.type, dayOfMonth:day, costCenterId:v.costCenterId||undefined, categoryId:v.categoryId||undefined });
+      }
+      AH.toast(edit ? 'Lançamento atualizado' : (v.recurring ? 'Lançamento + recorrência criados' : 'Lançamento criado')); load();
+    },
+  });
+}
+/* Exportar lançamentos filtrados em CSV (Excel-BR) */
+function exportCSV() {
+  const rows = filtered();
+  if (!rows.length) { AH.toast('Nada pra exportar neste filtro', 'warn'); return; }
+  const headers = ['Data','Vencimento','Descrição','Centro de custo','Categoria','Tipo','Valor','Situação','Forma'];
+  const data = rows.map(r => [
+    AH.fmtDate(r.date), r.dueDate ? AH.fmtDate(r.dueDate) : '', r.description,
+    CCMAP[r.costCenterId]?.name || '', CATMAP[r.categoryId]?.name || '',
+    r.type === 'income' ? 'Entrada' : 'Saída', (r.amountCents/100).toFixed(2).replace('.',','),
+    r.status === 'paid' ? 'Pago' : 'Pendente', r.paymentMethod || '',
+  ]);
+  AH.downloadCSV('lancamentos-' + new Date().toISOString().slice(0,10) + '.csv', headers, data);
+  AH.toast('CSV exportado ✅');
+}
+function editTx(id) { const t = ALL.find(x => x.id === id); if (t) txForm(t); }
+async function payTx(id) { try { await AH.api.post('/transactions/'+id+'/pay', {}); AH.toast('Marcado como pago'); load(); } catch (e) { AH.toast(e.message, 'err'); } }
+async function delTx(id) { if (!confirm('Excluir este lançamento?')) return; try { await AH.api.del('/transactions/'+id); AH.toast('Excluído'); load(); } catch (e) { AH.toast(e.message, 'err'); } }
+function manageModal() {
+  const ov = document.createElement('div'); ov.className = 'ah-modal-ov';
+  const inp = 'background:var(--surface-0);border:1px solid var(--border-strong);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px';
+  ov.innerHTML = `<div class="ah-modal" style="width:min(560px,100%)">
+    <div class="ah-modal__head"><strong>Centros de custo & categorias</strong><button class="ah-x">&times;</button></div>
+    <div class="ah-modal__body">
+      <div class="stack gap-8">
+        <span class="label-cap">Centros de custo <span class="dim" style="text-transform:none;letter-spacing:0;font-weight:400">— por projeto/evento</span></span>
+        <div id="mg-cc" class="stack gap-6"></div>
+        <div class="row gap-8"><input id="mg-cc-name" class="grow" placeholder="Novo centro (ex.: Cyber Night)" style="${inp}"><input id="mg-cc-color" type="color" value="#00bfff" style="width:40px;height:34px;border:1px solid var(--border-strong);border-radius:8px;background:none;cursor:pointer"><button class="btn btn--primary" id="mg-cc-add" style="padding:8px 12px"><i class="ph ph-plus"></i></button></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:14px 0"></div>
+      <div class="stack gap-8">
+        <span class="label-cap">Categorias <span class="dim" style="text-transform:none;letter-spacing:0;font-weight:400">— tipo de receita/despesa</span></span>
+        <div id="mg-cat" class="stack gap-6"></div>
+        <div class="row gap-8"><input id="mg-cat-name" class="grow" placeholder="Nova categoria (ex.: Aluguel, Patrocínio)" style="${inp}"><select id="mg-cat-type" style="${inp}"><option value="expense">Saída</option><option value="income">Entrada</option></select><button class="btn btn--primary" id="mg-cat-add" style="padding:8px 12px"><i class="ph ph-plus"></i></button></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:14px 0"></div>
+      <div class="stack gap-8">
+        <span class="label-cap">Contas recorrentes <span class="dim" style="text-transform:none;letter-spacing:0;font-weight:400">— contas fixas; geram pendência todo mês (crie marcando "repetir" num lançamento)</span></span>
+        <div id="mg-rec" class="stack gap-6"></div>
+      </div>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const $ = s => ov.querySelector(s);
+  const close = () => ov.remove();
+  $('.ah-x').onclick = close; ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  function paint() {
+    $('#mg-cc').innerHTML = CCS.length ? CCS.map(c => `<div class="row gap-8" style="font-size:13px"><span style="width:10px;height:10px;flex:none;border-radius:3px;background:${c.color||'var(--text-dim)'}"></span><span class="grow">${AH.escape(c.name)}</span><button class="btn btn--icon" data-delcc="${c.id}" title="Excluir" style="width:26px;height:26px"><i class="ph ph-trash" style="color:var(--danger-soft)"></i></button></div>`).join('') : '<span class="dim" style="font-size:12px">Nenhum centro ainda.</span>';
+    $('#mg-cat').innerHTML = CATS.length ? CATS.map(c => `<div class="row gap-8" style="font-size:13px"><span class="pill ${c.type==='income'?'pill--success':'pill--danger'}" style="font-size:10px">${c.type==='income'?'entrada':'saída'}</span><span class="grow">${AH.escape(c.name)}</span><button class="btn btn--icon" data-delcat="${c.id}" title="Excluir" style="width:26px;height:26px"><i class="ph ph-trash" style="color:var(--danger-soft)"></i></button></div>`).join('') : '<span class="dim" style="font-size:12px">Nenhuma categoria ainda.</span>';
+    ov.querySelectorAll('[data-delcc]').forEach(b => b.onclick = async () => { if (!confirm('Excluir este centro de custo? Os lançamentos ficam sem centro.')) return; try { await AH.api.del('/cost-centers/' + b.dataset.delcc); await load(); paint(); } catch (e) { AH.toast(e.message, 'err'); } });
+    ov.querySelectorAll('[data-delcat]').forEach(b => b.onclick = async () => { if (!confirm('Excluir esta categoria?')) return; try { await AH.api.del('/finance-categories/' + b.dataset.delcat); await load(); paint(); } catch (e) { AH.toast(e.message, 'err'); } });
+    $('#mg-rec').innerHTML = RECURRING.length ? RECURRING.map(r => `<div class="row gap-8" style="font-size:13px;${r.active ? '' : 'opacity:.55'}"><span class="pill ${r.type==='income'?'pill--success':'pill--danger'}" style="font-size:10px">${r.type==='income'?'entrada':'saída'}</span><span class="grow ellipsis">${AH.escape(r.description)}</span><span class="dim" style="white-space:nowrap">dia ${r.dayOfMonth} · ${AH.fmtBRL(r.amountCents)}</span><button class="btn" data-togr="${r.id}" style="font-size:11px;padding:5px 9px">${r.active?'pausar':'ativar'}</button><button class="btn btn--icon" data-delr="${r.id}" title="Excluir" style="width:26px;height:26px"><i class="ph ph-trash" style="color:var(--danger-soft)"></i></button></div>`).join('') : '<span class="dim" style="font-size:12px">Nenhuma conta recorrente ainda.</span>';
+    ov.querySelectorAll('[data-togr]').forEach(b => b.onclick = async () => { const r = RECURRING.find(x => x.id === b.dataset.togr); try { await AH.api.patch('/recurring/' + b.dataset.togr, { active: !r.active }); await load(); paint(); } catch (e) { AH.toast(e.message, 'err'); } });
+    ov.querySelectorAll('[data-delr]').forEach(b => b.onclick = async () => { if (!confirm('Excluir esta recorrência? Os lançamentos já gerados continuam.')) return; try { await AH.api.del('/recurring/' + b.dataset.delr); await load(); paint(); } catch (e) { AH.toast(e.message, 'err'); } });
+  }
+  paint();
+  $('#mg-cc-add').onclick = async () => { const name = $('#mg-cc-name').value.trim(); if (!name) return; try { await AH.api.post('/cost-centers', { name, color: $('#mg-cc-color').value }); $('#mg-cc-name').value = ''; await load(); paint(); AH.toast('Centro criado ✅'); } catch (e) { AH.toast(e.message, 'err'); } };
+  $('#mg-cat-add').onclick = async () => { const name = $('#mg-cat-name').value.trim(); if (!name) return; try { await AH.api.post('/finance-categories', { name, type: $('#mg-cat-type').value }); $('#mg-cat-name').value = ''; await load(); paint(); AH.toast('Categoria criada ✅'); } catch (e) { AH.toast(e.message, 'err'); } };
+}
+window.editTx = editTx; window.payTx = payTx; window.delTx = delTx;
+if (AH.guard('director') && AH.guardModule('financeiro')) init();
+</script>
+</body>
+</html>

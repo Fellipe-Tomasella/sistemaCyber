@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seja sócio — A.A.A.S.I. Cyber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/store.css">
+<style>
+  .plan-card { border-radius:var(--r-2xl); background:var(--surface-1); border:1px solid var(--border-strong); padding:24px; display:flex; flex-direction:column; gap:14px; }
+  .plan-card.feat { border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,119,255,.16); }
+</style>
+</head>
+<body>
+<div class="store">
+  <div id="siteNav"></div>
+  <section class="hero-store" style="padding:40px 32px 32px">
+    <div class="hero-store__row">
+      <div class="grow stack gap-12">
+        <span class="eyebrow">Plano de sócio</span>
+        <h1 style="font-size:clamp(36px,4.5vw,58px)">Vire sócio e<br>pague menos em <span style="color:var(--brand-accent)">tudo</span></h1>
+        <p style="margin:0;max-width:520px;color:#a9bacd;font-size:15.5px">Ingresso mais barato em toda festa, desconto na loja, carteirinha digital e prioridade nas delegações. Faça parte do time.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div id="plans" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;max-width:900px"></div>
+  </section>
+
+  <section class="section">
+    <h2>Benefícios de sócio</h2>
+    <div class="row" style="flex-wrap:wrap;gap:10px" id="benefits"></div>
+  </section>
+
+  <section class="join">
+    <div class="join__row">
+      <div class="grow stack gap-10">
+        <h2 class="display" style="font-size:36px">Pronto pra fazer parte?</h2>
+        <span class="dim" style="font-size:14px">Crie sua conta em 1 minuto e escolha seu plano.</span>
+      </div>
+      <a class="btn btn--primary btn--hero" id="ctaBtn" href="#" style="align-self:center">Criar minha conta</a>
+    </div>
+  </section>
+
+  <footer id="siteFooter"></footer>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/store.js"></script>
+<script>
+const PLABEL = { semester: '/semestre', annual: '/ano', custom: '' };
+(async function () {
+  const d = await AH.store.init('seja');
+  const slug = AH.store.slug;
+  document.getElementById('ctaBtn').href = `/entrar?mode=register&slug=${encodeURIComponent(slug)}`;
+  const host = document.getElementById('plans');
+  if (!d || !d.plans.length) { host.innerHTML = '<div class="dim">Planos em breve.</div>'; }
+  else {
+    host.innerHTML = d.plans.map((p, i) => `
+      <div class="plan-card ${i === 0 ? 'feat' : ''}">
+        <div class="row" style="justify-content:space-between"><span class="pill pill--accent">${p.name}</span>${i === 0 ? '<span class="pill pill--success">mais popular</span>' : ''}</div>
+        <div class="stack" style="gap:2px"><div class="row" style="align-items:baseline;gap:6px"><span class="display" style="font-size:44px">${AH.fmtBRL(p.priceCents, { decimals: 0 })}</span><span class="dim" style="font-size:13px">${PLABEL[p.period] || ''}</span></div><span class="dim" style="font-size:12px">${p.durationMonths} meses de vantagens</span></div>
+        <div class="stack gap-8" style="font-size:13px">${(p.benefits || []).map(b => `<span class="row gap-8"><i class="ph ph-check" style="color:var(--success)"></i>${AH.escape(b)}</span>`).join('') || '<span class="dim">Benefícios de sócio</span>'}</div>
+        <a class="btn btn--primary btn--block btn--hero" href="/entrar?mode=register&slug=${encodeURIComponent(slug)}" style="margin-top:auto">Quero este plano</a>
+      </div>`).join('');
+  }
+  const allBenefits = (d && d.plans[0] && d.plans[0].benefits && d.plans[0].benefits.length) ? d.plans[0].benefits : ['Ingresso mais barato em toda festa', 'Desconto na loja', 'Carteirinha digital', 'Prioridade nas delegações', 'Camiseta de boas-vindas'];
+  document.getElementById('benefits').innerHTML = allBenefits.map(b => `<span class="benefit"><i class="ph-fill ph-check-circle" style="font-size:15px;color:var(--brand-bright)"></i>${AH.escape(b)}</span>`).join('');
+})();
+</script>
+</body>
+</html>

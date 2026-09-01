@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirme seu e-mail — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/conta.css">
+<style>body{display:grid;place-items:center;padding:24px;min-height:100vh}</style>
+</head>
+<body>
+<div class="pin-box" style="width:min(420px,100%)">
+  <div style="width:56px;height:56px;border-radius:14px;align-self:center;display:grid;place-items:center;background:var(--tint-brand);color:var(--brand-accent)"><i class="ph-fill ph-envelope-simple" style="font-size:28px"></i></div>
+  <div class="stack gap-6" style="text-align:center"><h3>Confirme seu e-mail</h3><span class="dim" id="sub" style="font-size:13px">Enviamos um código pro seu e-mail.</span></div>
+  <input class="pin-input" id="code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+  <div class="pin-err" id="err" style="display:none"></div>
+  <button class="btn btn--primary btn--block btn--conta" id="go">Verificar</button>
+  <div class="row" style="justify-content:space-between;font-size:13px"><a href="#" id="resend" style="color:var(--text-brand)">Reenviar código</a><a href="#" id="skip" style="color:var(--text-dim)">Pular por agora</a></div>
+</div>
+<script src="/js/api.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const next = new URLSearchParams(location.search).get('next') || '/socio/home';
+if (!AH.guardAccount()) { /* redireciona */ } else {
+  const a = AH.session.account;
+  if (a && a.emailVerified) location.replace(next);
+  if (a && a.email) $('sub').innerHTML = 'Enviamos um código de 6 dígitos para <b style="color:var(--text-soft)">' + AH.escape(a.email) + '</b>.';
+
+  async function verify() {
+    const code = $('code').value.trim(), err = $('err'), go = $('go');
+    if (!/^\d{4,6}$/.test(code)) { err.textContent = 'Digite o código de 6 dígitos.'; err.style.display = 'block'; return; }
+    go.disabled = true; go.textContent = 'Verificando…';
+    try { await AH.api.post('/auth/verify-email', { code }); AH.toast('E-mail confirmado ✅'); location.href = next; }
+    catch (e) { err.textContent = e.message || 'Código incorreto'; err.style.display = 'block'; go.disabled = false; go.textContent = 'Verificar'; }
+  }
+  $('go').onclick = verify;
+  $('code').addEventListener('keydown', e => { if (e.key === 'Enter') verify(); });
+  $('resend').onclick = async e => { e.preventDefault(); try { await AH.api.post('/auth/resend-verification', {}); AH.toast('Código reenviado 📧'); } catch (ex) { AH.toast(ex.message, 'err'); } };
+  $('skip').onclick = e => { e.preventDefault(); location.href = next; };
+}
+</script>
+</body>
+</html>

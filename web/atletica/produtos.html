@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produtos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>
+  .calc { background:var(--surface-0); border:1px solid var(--border-strong); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .calc .line { display:flex; justify-content:space-between; font-size:13px; }
+  .calc .big { font-size:15px; font-weight:600; padding-top:8px; border-top:1px solid var(--border); }
+  .seg { display:flex; border:1px solid var(--border-strong); border-radius:9px; overflow:hidden; }
+  .seg button { flex:1; padding:9px; background:var(--surface-1); color:var(--text-muted); border:none; cursor:pointer; font-family:inherit; font-size:13px; }
+  .seg button.on { background:var(--brand); color:#fff; font-weight:600; }
+  .prod-modal input, .prod-modal select { background:var(--surface-0); border:1px solid var(--border-strong); border-radius:9px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; width:100%; outline:none; }
+  .prod-modal input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,119,255,0.16); }
+  .prod-modal label.fl { font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); font-weight:600; display:block; margin-bottom:5px; }
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow" id="eyebrow">Loja · produtos</span><h1>Produtos</h1></div>
+        <button class="btn btn--primary" id="newBtn"><i class="ph ph-plus"></i>Novo produto</button>
+      </div>
+    </header>
+    <div class="page-body">
+      <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+let PRODUCTS = [], DEFAULT_FEE = 0;
+
+async function init(){
+  AH.renderRail('produtos');
+  document.getElementById('newBtn').onclick = () => openForm();
+  try { const ps = await AH.api.get('/payment-settings'); DEFAULT_FEE = (ps.cardFeeBp||0)/100; } catch {}
+  await load();
+}
+async function load(){
+  let d; try { d = await AH.api.get('/products'); } catch(e){ AH.toast(e.message,'err'); return; }
+  PRODUCTS = d.products;
+  document.getElementById('eyebrow').textContent = `${d.products.length} produtos · ${d.products.filter(p=>p.active).length} na loja`;
+  const grid = document.getElementById('grid');
+  if(!d.products.length){ grid.innerHTML = '<div class="ah-empty" style="grid-column:1/-1"><i class="ph ph-t-shirt"></i><span>Nenhum produto ainda. Clique em “Novo produto”.</span></div>'; return; }
+  grid.innerHTML = d.products.map(p => {
+    const custo = (p.costCents||0)+(p.shippingCents||0);
+    const lucro = p.basePriceCents - custo - Math.round(p.basePriceCents*(p.feeBp||0)/10000);
+    const margem = custo>0 ? Math.round(lucro/custo*100) : 0;
+    return `<div class="panel panel--pad0" style="overflow:hidden;display:flex;flex-direction:column;${p.active?'':'opacity:.6'}">
+      <div style="height:120px;position:relative;${p.imageKey?`background:#0e1826 center/cover url(${AH.fileUrl(p.imageKey)})`:'background:linear-gradient(135deg,#152232,#0e1826)'};display:grid;place-items:center;color:var(--text-faint);font-size:12px">
+        ${p.imageKey?'':AH.escape(p.category||p.name)}
+        <span class="pill ${p.active?'pill--success':'pill--neutral'}" style="position:absolute;top:8px;right:8px">${p.active?'na loja':'oculto'}</span>
+      </div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:8px;flex:1">
+        <strong style="font-size:14.5px">${AH.escape(p.name)}</strong>
+        <div class="row gap-8" style="align-items:baseline"><span class="display num" style="font-size:22px">${AH.fmtBRL(p.basePriceCents)}</span><span class="dim" style="font-size:11px">venda</span></div>
+        <div class="row gap-8" style="font-size:11.5px;flex-wrap:wrap">
+          <span class="dim">Custo ${AH.fmtBRL(custo)}</span>
+          <span class="pill ${lucro>=0?'pill--success':'pill--danger'}">Lucro ${AH.fmtBRL(lucro)} · ${margem}%</span>
+        </div>
+        <div class="row gap-8" style="font-size:12px">
+          <span class="pill ${p.stockQuantity>0?'pill--accent':'pill--danger'}">${p.trackStock?p.stockQuantity+' em estoque':'estoque livre'}</span>
+        </div>
+        <div class="row gap-8" style="margin-top:auto">
+          <button class="btn grow" onclick="openForm('${p.id}')" style="font-size:12px"><i class="ph ph-pencil-simple"></i>Gerir</button>
+          <button class="btn btn--icon" title="Foto" onclick="uploadImg('${p.id}')"><i class="ph ph-image"></i></button>
+          <button class="btn btn--icon" title="Preço sócio" onclick="tier('${p.id}')"><i class="ph ph-tag"></i></button>
+          <button class="btn btn--icon del" title="Excluir" onclick="delProd('${p.id}')"><i class="ph ph-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Calculadora custo → preço ---------- */
+function calc(costR, freteR, marginType, marginVal, feeR){
+  const custoBase = costR + freteR;
+  let subtotal = marginType==='percent' ? custoBase*(1+marginVal/100) : custoBase+marginVal;
+  const fee = Math.min(0.95, feeR/100);
+  const preco = fee>0 ? subtotal/(1-fee) : subtotal;
+  const taxaVal = preco*fee;
+  const lucro = preco - taxaVal - custoBase;
+  const margemReal = custoBase>0 ? lucro/custoBase*100 : 0;
+  return { custoBase, preco, taxaVal, lucro, margemReal };
+}
+const R = c => 'R$ ' + (c).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+/* ---------- Modal de gestão do produto ---------- */
+async function openForm(id){
+  const p = id ? PRODUCTS.find(x=>x.id===id) : null;
+  let vars = [];
+  if (p) { try { const d = await AH.api.get('/products/'+p.id); vars = (d.variants||[]).map(v=>({ name:v.name, stockQuantity:v.stockQuantity })); } catch {} }
+  const marginType = p ? p.marginType : 'percent';
+  const marginVal = p ? (p.marginType==='percent' ? (p.marginValue/100) : (p.marginValue/100)) : 30;
+  const feeInit = p ? (p.feeBp/100) : DEFAULT_FEE;
+
+  const ov = document.createElement('div'); ov.className='ah-modal-ov';
+  ov.innerHTML = `<div class="ah-modal prod-modal" style="width:min(560px,100%)">
+    <div class="ah-modal__head"><strong>${p?'Gerir produto':'Novo produto'}</strong><button class="ah-x">&times;</button></div>
+    <div class="ah-modal__body">
+      <div class="g2">
+        <div><label class="fl">Nome</label><input id="m-name" value="${p?AH.escape(p.name):''}"></div>
+        <div><label class="fl">Categoria</label><input id="m-cat" value="${p?AH.escape(p.category||''):''}" placeholder="vestuário, caneca…"></div>
+      </div>
+      <div class="g2">
+        <div><label class="fl">Custo de compra (R$)</label><input id="m-cost" type="number" step="0.01" value="${p?(p.costCents/100).toFixed(2):''}" placeholder="0,00"></div>
+        <div><label class="fl">Frete por unidade (R$)</label><input id="m-frete" type="number" step="0.01" value="${p?(p.shippingCents/100).toFixed(2):'0'}" placeholder="0,00"></div>
+      </div>
+      <div>
+        <label class="fl">Margem de lucro</label>
+        <div class="row gap-10">
+          <div class="seg" style="width:150px"><button type="button" id="seg-pct" class="${marginType==='percent'?'on':''}">%</button><button type="button" id="seg-fix" class="${marginType==='fixed'?'on':''}">R$</button></div>
+          <input id="m-margin" type="number" step="0.01" value="${marginVal}" style="flex:1">
+        </div>
+      </div>
+      <div><label class="fl">Taxa de pagamento estimada (%)</label><input id="m-fee" type="number" step="0.01" value="${feeInit}" placeholder="ex: 4.99"><span class="ah-hint">O preço é ajustado pra que a taxa não coma sua margem.</span></div>
+
+      <div class="calc" id="m-calc"></div>
+
+      <div class="g2">
+        <div><label class="fl">Preço de venda (R$)</label><input id="m-price" type="number" step="0.01" value="${p?(p.basePriceCents/100).toFixed(2):''}"><span class="ah-hint"><a href="#" id="useSuggested">usar sugerido</a></span></div>
+        <div><label class="fl">Estoque</label><input id="m-stock" type="number" value="${p?p.stockQuantity:0}"></div>
+      </div>
+      <label class="ah-check"><input type="checkbox" id="m-track" ${p?(p.trackStock?'checked':''):'checked'}> Controlar estoque</label>
+      <label class="ah-check"><input type="checkbox" id="m-active" ${p?(p.active?'checked':''):'checked'}> Colocar à venda na loja</label>
+
+      <div class="stack gap-6" style="margin-top:2px">
+        <label class="fl" style="margin-bottom:0">Tamanhos / variantes <span style="text-transform:none;font-weight:400;color:var(--text-dim)">— opcional (P, M, G…); com tamanhos, o estoque é por tamanho</span></label>
+        <div id="m-vars" class="stack gap-6"></div>
+        <button type="button" class="btn" id="m-var-add" style="align-self:flex-start;font-size:12px"><i class="ph ph-plus"></i> Adicionar tamanho</button>
+      </div>
+
+      <div class="ah-modal__err" style="display:none"></div>
+      <div class="ah-modal__foot"><button type="button" class="btn ah-cancel">Cancelar</button><button type="button" class="btn btn--primary" id="m-save">Salvar produto</button></div>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const $ = s => ov.querySelector(s);
+  let mType = marginType;
+  const close = () => ov.remove();
+  $('.ah-x').onclick = close; $('.ah-cancel').onclick = close;
+  ov.addEventListener('click', e => { if(e.target===ov) close(); });
+
+  function recalc(){
+    const c = calc(+$('#m-cost').value||0, +$('#m-frete').value||0, mType, +$('#m-margin').value||0, +$('#m-fee').value||0);
+    $('#m-calc').innerHTML = `
+      <div class="line"><span class="muted">Custo total (compra + frete)</span><span class="num">${R(c.custoBase)}</span></div>
+      <div class="line"><span class="muted">Taxa de pagamento estimada</span><span class="num" style="color:var(--danger-soft)">− ${R(c.taxaVal)}</span></div>
+      <div class="line big"><span>Preço de venda sugerido</span><span class="num" style="color:var(--brand-accent)">${R(c.preco)}</span></div>
+      <div class="line"><span class="muted">Lucro líquido por unidade</span><span class="num" style="color:${c.lucro>=0?'var(--success)':'var(--danger-soft)'}">${R(c.lucro)} · ${c.margemReal.toFixed(0)}%</span></div>`;
+    $('#useSuggested').dataset.v = c.preco.toFixed(2);
+  }
+  ['#m-cost','#m-frete','#m-margin','#m-fee'].forEach(s => $(s).addEventListener('input', recalc));
+  $('#seg-pct').onclick = () => { mType='percent'; $('#seg-pct').classList.add('on'); $('#seg-fix').classList.remove('on'); recalc(); };
+  $('#seg-fix').onclick = () => { mType='fixed'; $('#seg-fix').classList.add('on'); $('#seg-pct').classList.remove('on'); recalc(); };
+  $('#useSuggested').onclick = e => { e.preventDefault(); $('#m-price').value = $('#useSuggested').dataset.v; };
+  recalc();
+  if(!p){ // novo: já sugere o preço
+    setTimeout(()=>{ if(!$('#m-price').value) $('#m-price').value = $('#useSuggested').dataset.v; }, 0);
+  }
+
+  // ---- Tamanhos / variantes ----
+  function renderVars(){
+    $('#m-vars').innerHTML = vars.map((v,i)=>`<div class="row gap-8" data-vi="${i}"><input class="v-name" value="${AH.escape(v.name)}" placeholder="Tamanho (ex.: M)" style="flex:1"><input class="v-stock" type="number" value="${v.stockQuantity||0}" placeholder="estoque" style="width:96px"><button type="button" class="btn btn--icon v-del" title="Remover" style="width:34px"><i class="ph ph-x"></i></button></div>`).join('') || '<span class="dim" style="font-size:12px">Sem tamanhos — vende como item único (usa o estoque acima).</span>';
+    ov.querySelectorAll('#m-vars [data-vi]').forEach(row=>{ const i=+row.dataset.vi;
+      row.querySelector('.v-name').oninput = e => vars[i].name = e.target.value;
+      row.querySelector('.v-stock').oninput = e => vars[i].stockQuantity = +e.target.value||0;
+      row.querySelector('.v-del').onclick = () => { vars.splice(i,1); renderVars(); };
+    });
+  }
+  $('#m-var-add').onclick = () => { vars.push({ name:'', stockQuantity:0 }); renderVars(); };
+  renderVars();
+
+  $('#m-save').onclick = async () => {
+    const err = $('.ah-modal__err');
+    const name = $('#m-name').value.trim();
+    const price = Math.round((+$('#m-price').value||0)*100);
+    if(!name){ err.textContent='Informe o nome'; err.style.display='block'; return; }
+    if(price<=0){ err.textContent='Informe o preço de venda'; err.style.display='block'; return; }
+    const payload = {
+      name, category: $('#m-cat').value.trim(),
+      basePriceCents: price,
+      costCents: Math.round((+$('#m-cost').value||0)*100),
+      shippingCents: Math.round((+$('#m-frete').value||0)*100),
+      marginType: mType,
+      marginValue: Math.round((+$('#m-margin').value||0)*100), // % em bp OU centavos
+      feeBp: Math.round((+$('#m-fee').value||0)*100),
+      stockQuantity: +$('#m-stock').value||0,
+      trackStock: $('#m-track').checked,
+      active: $('#m-active').checked,
+    };
+    $('#m-save').disabled = true; $('#m-save').textContent = 'Salvando…';
+    try {
+      let prodId;
+      if(p){ await AH.api.patch('/products/'+p.id, payload); prodId = p.id; }
+      else { const r = await AH.api.post('/products', payload); prodId = r.product.id; }
+      const clean = vars.filter(v => (v.name||'').trim()).map(v => ({ name:v.name.trim(), stockQuantity:v.stockQuantity||0 }));
+      await AH.api.put('/products/'+prodId+'/variants', { variants: clean });
+      AH.toast(p?'Produto atualizado ✅':'Produto criado ✅'); close(); load();
+    } catch(e){ err.textContent = e.message; err.style.display='block'; $('#m-save').disabled=false; $('#m-save').textContent='Salvar produto'; }
+  };
+}
+
+function uploadImg(id){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return;
+    try{ const up=await AH.upload(f,'produto'); await AH.api.patch('/products/'+id,{imageKey:up.key}); AH.toast('Foto atualizada ✅'); load(); }
+    catch(e){ AH.toast(e.message,'err'); } };
+  inp.click();
+}
+function tier(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  AH.formModal({ title:'Preço de sócio — '+p.name, fields:[
+    { name:'priceCents', label:'Preço pro sócio (R$)', type:'money', required:true, hint:'Preço normal: '+AH.fmtBRL(p.basePriceCents) },
+  ], submitLabel:'Salvar', onSubmit: async(v)=>{ await AH.api.put('/products/'+id+'/price-tier',{audience:'member',priceCents:v.priceCents}); AH.toast('Preço de sócio salvo'); } });
+}
+async function delProd(id){
+  if(!confirm('Excluir este produto?')) return;
+  try{ await AH.api.del('/products/'+id); AH.toast('Produto excluído'); load(); }catch(e){ AH.toast(e.message,'err'); }
+}
+window.openForm=openForm; window.uploadImg=uploadImg; window.tier=tier; window.delProd=delProd;
+if(AH.guard('director') && AH.guardModule('produtos')) init();
+</script>
+</body>
+</html>

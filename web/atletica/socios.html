@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sócios — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .socios-layout { flex:1; display:grid; grid-template-columns:1fr 396px; min-height:0; }
+  .list-head, .list-row { display:grid; grid-template-columns:1fr 210px 106px 124px 106px; gap:14px; align-items:center; }
+  .detail { border-left:1px solid var(--border); background:var(--surface-3); display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+  .detail__hero { position:relative; overflow:hidden; padding:20px; border-bottom:1px solid var(--border); background:linear-gradient(140deg, rgba(0,119,255,0.18), transparent); }
+  .tabs { display:flex; gap:20px; padding:0 20px; border-bottom:1px solid var(--border); font-size:13px; }
+  .tabs span { padding:12px 0; color:var(--text-dim); cursor:pointer; }
+  .tabs span.is-active { color:var(--brand-accent); font-weight:600; box-shadow:inset 0 -2px 0 var(--brand-accent); }
+  @media (max-width:1200px){ .socios-layout { grid-template-columns:1fr; } .detail { display:none; } }
+  @media (max-width:760px){ .list-head span:nth-child(2), .list-row > *:nth-child(2), .list-head span:nth-child(5), .list-row > *:nth-child(5){ display:none; } .list-head, .list-row { grid-template-columns:1fr 100px 116px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6">
+          <span class="eyebrow">486 cadastros · 2º semestre 2026</span>
+          <h1>Sócios</h1>
+        </div>
+        <div class="row gap-8" style="flex:none;flex-wrap:wrap">
+          <button class="btn"><i class="ph ph-paper-plane-tilt"></i>Cobrar em massa</button>
+          <button class="btn"><i class="ph ph-export"></i>Exportar</button>
+          <button class="btn btn--primary"><i class="ph ph-user-plus"></i>Novo sócio</button>
+        </div>
+      </div>
+      <div class="row gap-10" style="margin-top:16px;flex-wrap:wrap">
+        <div class="search" style="width:290px"><i class="ph ph-magnifying-glass" style="font-size:16px"></i><input placeholder="Buscar por nome, CPF ou matrícula"></div>
+        <div id="chips" class="row gap-10" style="flex-wrap:wrap"></div>
+      </div>
+    </header>
+
+    <div class="socios-layout">
+      <!-- LISTA -->
+      <div class="stack" style="min-height:0;overflow:hidden">
+        <div class="list-head" style="padding:10px 24px;background:var(--surface-3);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600">
+          <span>Sócio</span><span>Curso</span><span>Plano</span><span>Status</span><span style="text-align:right">Vencimento</span>
+        </div>
+        <div class="grow" style="overflow:auto" id="rows"></div>
+      </div>
+
+      <!-- DETALHE -->
+      <aside class="detail">
+        <div class="detail__hero">
+          <div class="row gap-12">
+            <div class="avatar avatar--lg">MA</div>
+            <div class="grow stack gap-6">
+              <strong style="font-size:17px;font-weight:600">Marina Alves de Souza</strong>
+              <div class="row gap-8"><span class="pill pill--success">Em dia</span><span style="font-size:12px;color:var(--text-dim)">nº 0148</span></div>
+            </div>
+          </div>
+          <div class="row gap-8" style="margin-top:16px">
+            <button class="btn btn--primary grow" style="font-size:12.5px">Carteirinha</button>
+            <button class="btn grow" style="font-size:12.5px">Cobrança</button>
+            <button class="btn btn--icon"><i class="ph ph-dots-three" style="font-size:18px"></i></button>
+          </div>
+        </div>
+        <div class="tabs"><span class="is-active">Dados</span><span>Cobranças</span><span>Pedidos</span></div>
+        <div class="grow" style="padding:18px 20px;overflow:auto">
+          <div class="stack gap-12" id="dados"></div>
+          <div class="stack gap-12" style="margin-top:18px">
+            <span class="label-cap">Histórico</span>
+            <div class="stack gap-12" id="hist"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+const ST = {
+  active:  { label:'Em dia',       cls:'pill--success', mark:'transparent' },
+  pending: { label:'Pendente',     cls:'pill--warn',    mark:'var(--warn)' },
+  overdue: { label:'Inadimplente', cls:'pill--danger',  mark:'var(--danger)' },
+  expired: { label:'Expirado',     cls:'pill--danger',  mark:'var(--danger)' },
+  cancelled:{label:'Cancelado',    cls:'pill--neutral', mark:'var(--text-dim)' },
+};
+let ALL = [];
+
+async function init() {
+  AH.renderRail('socios');
+  let data;
+  try { data = await AH.api.get('/members'); }
+  catch (e) { AH.toast(e.message, 'err'); return; }
+  ALL = data.members;
+  const c = data.counts;
+  const chips = [['Todos',c.total,'all'],['Em dia',c.active,'active'],['Pendentes',c.pending,'pending'],['Inadimplentes',c.overdue,'overdue']];
+  document.querySelector('.hero .eyebrow').textContent = `${c.total} cadastros`;
+  document.getElementById('chips').innerHTML = chips.map(([l,n,f],i) => `
+    <span class="chip ${i===0?'is-active':''}" data-filter="${f}">${l}<span class="n">${n}</span></span>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(ch => ch.addEventListener('click', () => {
+    document.querySelectorAll('#chips .chip').forEach(x => x.classList.remove('is-active'));
+    ch.classList.add('is-active');
+    renderRows(ch.dataset.filter);
+  }));
+  renderRows('all');
+  if (ALL[0]) loadDetail(ALL[0].id);
+}
+
+function renderRows(filter) {
+  const list = filter === 'all' ? ALL : ALL.filter(m => m.status === filter);
+  const host = document.getElementById('rows');
+  if (!list.length) { host.innerHTML = '<div class="dim" style="padding:24px;font-size:13px">Nenhum sócio aqui.</div>'; return; }
+  host.innerHTML = list.map(m => {
+    const S = ST[m.status] || ST.pending;
+    return `<div class="list-row" data-id="${m.id}" style="padding:12px 24px;border-bottom:1px solid var(--border-hair);font-size:13px;position:relative;cursor:pointer" onmouseover="this.style.background='var(--surface-2)'" onmouseout="this.style.background='transparent'">
+      <span class="row-mark2" style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${S.mark}"></span>
+      <span class="row gap-10" style="min-width:0"><span class="avatar">${AH.initials(m.name)}</span><span class="ellipsis" style="font-weight:500">${AH.escape(m.name)}</span></span>
+      <span class="ellipsis" style="font-size:12px;color:var(--text-muted)">${AH.escape(m.course||'—')}</span>
+      <span class="pill pill--neutral" style="justify-self:start">${m.registrationNumber?'Matríc.':'Sócio'}</span>
+      <span class="pill ${S.cls}" style="justify-self:start">${S.label}</span>
+      <span class="num" style="text-align:right;font-size:12.5px;color:var(--text-muted)">${AH.fmtDate(m.memberSince)}</span>
+    </div>`;
+  }).join('');
+  host.querySelectorAll('.list-row').forEach(r => r.addEventListener('click', () => loadDetail(r.dataset.id)));
+}
+
+async function loadDetail(id) {
+  let d;
+  try { d = await AH.api.get('/members/' + id); } catch (e) { AH.toast(e.message,'err'); return; }
+  const m = d.member, S = ST[m.status] || ST.pending;
+  const hero = document.querySelector('.detail__hero');
+  hero.querySelector('.avatar--lg').textContent = AH.initials(m.name);
+  hero.querySelector('strong').textContent = m.name;
+  hero.querySelector('.pill').className = 'pill ' + S.cls; hero.querySelector('.pill').textContent = S.label;
+  hero.querySelectorAll('span')[hero.querySelectorAll('span').length-1].textContent = m.registrationNumber ? 'matríc. ' + m.registrationNumber : '';
+
+  const dados = [
+    ['Curso', m.course || '—'], ['Matrícula', m.registrationNumber || '—'],
+    ['E-mail', m.email || '—'], ['Status', S.label], ['Sócio desde', AH.fmtDate(m.memberSince)],
+  ];
+  document.getElementById('dados').innerHTML = dados.map(([k,v]) => `
+    <div class="stack" style="gap:2px"><span class="label-cap">${AH.escape(k)}</span><span style="font-size:13.5px">${AH.escape(v)}</span></div>`).join('');
+
+  const ms = d.memberships || [];
+  document.getElementById('hist').innerHTML = ms.length ? ms.map(x => `
+    <div class="row gap-12" style="align-items:flex-start">
+      <span style="width:8px;height:8px;flex:none;margin-top:6px;border-radius:50%;background:var(--brand-accent)"></span>
+      <div class="stack" style="line-height:1.35"><span style="font-size:13px;font-weight:500">Adesão ${AH.fmtBRL(x.priceCents)}</span><span style="font-size:11.5px;color:var(--text-dim)">${AH.fmtDate(x.startDate)} → ${AH.fmtDate(x.endDate)} · ${x.status}</span></div>
+    </div>`).join('') : '<span class="dim" style="font-size:12.5px">Sem adesões registradas</span>';
+}
+
+if (AH.guard('director') && AH.guardModule('socios')) init();
+</script>
+</body>
+</html>

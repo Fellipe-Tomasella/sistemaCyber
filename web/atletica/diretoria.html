@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diretoria — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>.dir-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}@media(max-width:960px){.dir-grid{grid-template-columns:1fr}}</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero"><div class="hero__row"><div class="stack gap-6"><span class="eyebrow">Equipe & gestões</span><h1>Diretoria</h1></div>
+      <button class="btn btn--primary" id="newBtn"><i class="ph ph-user-plus"></i>Adicionar diretor</button></div></header>
+    <div class="page-body"><div class="dir-grid">
+      <div class="panel panel--pad0" style="overflow:hidden">
+        <div class="row" style="padding:15px 18px;border-bottom:1px solid var(--border)"><strong class="panel__title--display">Membros da diretoria</strong></div>
+        <div id="dirs"></div>
+      </div>
+      <div class="panel panel--pad0" style="overflow:hidden;align-self:start">
+        <div class="row" style="justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border)"><strong class="panel__title--display">Gestões</strong>
+          <button class="btn" id="newTerm" style="font-size:12px;padding:7px 12px"><i class="ph ph-plus"></i>Nova</button></div>
+        <div id="terms"></div>
+      </div>
+    </div></div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+const ROLES={admin:'Presidente/Admin',finance:'Financeiro',events:'Eventos',viewer:'Visualizador'};
+const ROLEOPTS=Object.entries(ROLES).map(([value,label])=>({value,label}));
+async function init(){ AH.renderRail('diretoria'); document.getElementById('newBtn').onclick=newDir; document.getElementById('newTerm').onclick=newTerm; await load(); }
+async function load(){
+  let dirs,terms; try{ [dirs,terms]=await Promise.all([AH.api.get('/directors'),AH.api.get('/terms')]); }catch(e){ AH.toast(e.message,'err'); return; }
+  document.getElementById('dirs').innerHTML=dirs.directors.map(d=>`
+    <div class="row gap-12" style="padding:13px 18px;border-bottom:1px solid var(--border-hair);${d.active?'':'opacity:.5'}">
+      <span class="avatar">${AH.initials(d.name)}</span>
+      <div class="grow stack" style="line-height:1.3"><strong style="font-size:14px">${AH.escape(d.name)}</strong><span class="dim" style="font-size:12px">${AH.escape(d.email)}</span></div>
+      <span class="pill pill--accent">${ROLES[d.role]||d.role}</span>
+    </div>`).join('');
+  document.getElementById('terms').innerHTML=terms.terms.length?terms.terms.map(t=>`
+    <div class="row gap-12" style="padding:13px 18px;border-bottom:1px solid var(--border-hair)">
+      <i class="ph ph-trophy" style="font-size:18px;color:var(--brand-accent)"></i>
+      <div class="grow stack" style="line-height:1.3"><strong style="font-size:13.5px">${AH.escape(t.name)}</strong><span class="dim" style="font-size:11.5px">${AH.fmtDate(t.startDate)} → ${AH.fmtDate(t.endDate)}</span></div>
+      ${t.isCurrent?'<span class="pill pill--success">atual</span>':''}
+    </div>`).join(''):'<div class="ah-empty"><i class="ph ph-trophy"></i><span>Sem gestões.</span></div>';
+}
+async function newDir(){
+  AH.formModal({title:'Adicionar diretor',fields:[
+    {name:'name',label:'Nome',required:true},
+    {name:'email',label:'E-mail',required:true},
+    {name:'password',label:'Senha inicial',required:true},
+    {name:'role',label:'Cargo',type:'select',options:ROLEOPTS,value:'viewer'},
+    {name:'cargoLabel',label:'Título (ex: Diretor de Esportes)'},
+  ],onSubmit:async(v)=>{ await AH.api.post('/directors',v); AH.toast('Diretor adicionado'); load(); }});
+}
+async function newTerm(){
+  AH.formModal({title:'Nova gestão',fields:[
+    {name:'name',label:'Nome',value:'Gestão 26/27',required:true},
+    {name:'startDate',label:'Início',placeholder:'aaaa-mm-dd'},
+    {name:'endDate',label:'Fim',placeholder:'aaaa-mm-dd'},
+    {name:'isCurrent',label:'Gestão atual',type:'checkbox',value:true},
+  ],onSubmit:async(v)=>{ await AH.api.post('/terms',v); AH.toast('Gestão criada'); load(); }});
+}
+if(AH.guard('director') && AH.guardAdmin()) init();
+</script>
+</body>
+</html>

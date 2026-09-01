@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loja — A.A.A.S.I. Cyber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/store.css">
+</head>
+<body>
+<div class="store">
+  <div id="siteNav"></div>
+  <section class="hero-store" style="padding:34px 32px 28px">
+    <div class="hero-store__row">
+      <div class="grow stack gap-8">
+        <span class="eyebrow" id="count">Loja</span>
+        <h1 style="font-size:clamp(34px,4vw,54px)">Loja da Cyber</h1>
+        <p style="margin:0;color:#a9bacd;font-size:15px">Merch, kits e produtos da atlética. Sócio paga menos em tudo.</p>
+      </div>
+    </div>
+  </section>
+  <section class="section" id="cats"></section>
+  <section class="section" style="padding-top:0"><div class="products" id="products"></div></section>
+  <footer id="siteFooter"></footer>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/store.js"></script>
+<script>
+(async function () {
+  const d = await AH.store.init('loja');
+  const host = document.getElementById('products');
+  if (!d) { host.innerHTML = '<div class="dim" style="grid-column:1/-1">Loja indisponível.</div>'; return; }
+  document.getElementById('count').textContent = `${d.products.length} ${d.products.length === 1 ? 'produto' : 'produtos'}`;
+  host.innerHTML = d.products.length ? d.products.map(AH.store.productCard).join('') : '<div class="ah-empty" style="grid-column:1/-1"><i class="ph ph-t-shirt"></i><span>Nenhum produto no catálogo ainda.</span></div>';
+})();
+</script>
+</body>
+</html>

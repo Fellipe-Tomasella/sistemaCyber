@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>
+  .ped-head,.ped-row{display:grid;grid-template-columns:80px 1fr 120px 130px 130px 120px;gap:14px;align-items:center}
+  @media(max-width:820px){.ped-head span:nth-child(3),.ped-row>*:nth-child(3){display:none}.ped-head,.ped-row{grid-template-columns:70px 1fr 120px 120px 110px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow" id="eyebrow">Vendas da loja</span><h1>Pedidos</h1></div>
+      </div>
+      <div class="row gap-10" style="margin-top:16px" id="chips"></div>
+    </header>
+    <div class="page-body">
+      <div class="panel panel--pad0" style="overflow:hidden">
+        <div class="ped-head" style="padding:10px 22px;background:var(--surface-3);border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600">
+          <span>Pedido</span><span>Comprador</span><span>Canal</span><span>Total</span><span>Status</span><span style="text-align:right">Ação</span>
+        </div>
+        <div id="rows"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+const PAY={pending:['Aguardando','pill--warn'],paid:['Pago','pill--success'],cancelled:['Cancelado','pill--neutral']};
+const FUL={open:'aberto',ready:'pronto',delivered:'entregue'};
+let FILTER='';
+async function init(){ AH.renderRail('pedidos'); await load(); }
+async function load(){
+  let d; try{ d=await AH.api.get('/orders'+(FILTER?'?payment='+FILTER:'')); }catch(e){ AH.toast(e.message,'err'); return; }
+  document.getElementById('eyebrow').textContent = `${d.orders.length} pedidos`;
+  const chips=[['Todos',''],['Aguardando','pending'],['Pagos','paid']];
+  document.getElementById('chips').innerHTML=chips.map(([l,f])=>`<span class="chip ${f===FILTER?'is-active':''}" data-f="${f}">${l}</span>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{FILTER=c.dataset.f;load();});
+  const host=document.getElementById('rows');
+  if(!d.orders.length){ host.innerHTML='<div class="ah-empty"><i class="ph ph-shopping-bag"></i><span>Nenhum pedido.</span></div>'; return; }
+  host.innerHTML=d.orders.map(o=>{
+    const [lbl,cls]=PAY[o.paymentStatus]||PAY.pending;
+    return `<div class="ped-row" style="padding:12px 22px;border-bottom:1px solid var(--border-hair);font-size:13px">
+      <span class="display" style="font-size:16px;color:var(--text-faint)">#${o.orderNumber}</span>
+      <span class="ellipsis" style="font-weight:500">${AH.escape(o.buyerName||'—')}</span>
+      <span class="pill pill--neutral" style="justify-self:start">${o.channel==='store'?'loja':'balcão'}</span>
+      <span class="num" style="font-weight:600">${AH.fmtBRL(o.totalCents)}</span>
+      <span><span class="pill ${cls}">${lbl}</span> <span class="dim" style="font-size:11px">${FUL[o.fulfillmentStatus]||''}</span></span>
+      <span style="text-align:right">${o.paymentStatus==='pending'?`<button class="btn btn--success" style="font-size:12px;padding:7px 12px" onclick="pay('${o.id}')">Confirmar</button>`:'<span class="dim" style="font-size:12px">✓</span>'}</span>
+    </div>`;
+  }).join('');
+}
+async function pay(id){ try{ await AH.api.post('/orders/'+id+'/pay',{}); AH.toast('Pagamento confirmado ✅'); load(); }catch(e){ AH.toast(e.message,'err'); } }
+window.pay=pay;
+if(AH.guard('director') && AH.guardModule('pedidos')) init();
+</script>
+</body>
+</html>

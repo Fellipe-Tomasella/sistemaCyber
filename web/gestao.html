@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão da atlética — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/conta.css">
+<style>
+  .g-wrap { max-width:1080px; margin:0 auto; padding:0 20px 70px; }
+  .tabs { display:flex; gap:6px; padding:4px; background:var(--surface-1); border:1px solid var(--border-strong); border-radius:12px; width:max-content; margin:20px 0 6px; }
+  .tabs button { padding:9px 18px; border:none; border-radius:9px; background:transparent; color:var(--text-muted); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; display:flex; gap:8px; align-items:center; }
+  .tabs button.on { background:var(--brand); color:#fff; }
+  .urow { display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid var(--border); border-radius:12px; background:var(--surface-1); flex-wrap:wrap; }
+  .urow select { background:var(--surface-0); border:1px solid var(--border-strong); border-radius:9px; padding:8px 10px; color:var(--text); font-family:inherit; font-size:13px; }
+  .mchk { display:flex; flex-wrap:wrap; gap:8px; }
+  .mchk label { display:flex; align-items:center; gap:7px; padding:7px 11px; border:1px solid var(--border-strong); border-radius:9px; font-size:13px; cursor:pointer; background:var(--surface-0); }
+  .mchk input { accent-color:var(--brand); width:15px; height:15px; }
+  .rolecard { border:1px solid var(--border); border-radius:14px; background:var(--surface-1); padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .badge-mini { font-size:11px; padding:3px 8px; border-radius:6px; background:var(--tint-brand); color:var(--text-brand); }
+</style>
+</head>
+<body>
+<div class="conta">
+  <div class="conta-top">
+    <a class="row gap-10" href="/socio/home" style="text-decoration:none;color:var(--text)"><div class="conta-top__logo"><img id="logo" src="/assets/brasao-cyber.jpeg" alt=""></div><span class="conta-top__name" id="wsName">Gestão</span></a>
+    <nav class="conta-nav mla"><a href="/socio/home"><i class="ph ph-arrow-left"></i>Minha conta</a></nav>
+    <div class="conta-top__acc"><div class="acc-chip"><div class="acc-avatar" id="av">?</div><button class="btn btn--icon" id="logout" title="Sair" style="width:30px;height:30px;border:none"><i class="ph ph-sign-out"></i></button></div></div>
+  </div>
+
+  <div class="conta-body g-wrap">
+    <div class="stack gap-4"><h1 class="display" style="font-size:28px;margin:0">Gestão da atlética</h1><span class="dim" style="font-size:13px">Crie cargos, defina o que cada um acessa e gerencie as pessoas.</span></div>
+
+    <div class="tabs">
+      <button data-tab="users" class="on"><i class="ph ph-users"></i> Usuários</button>
+      <button data-tab="roles"><i class="ph ph-identification-card"></i> Cargos</button>
+    </div>
+
+    <div id="tab-users" class="stack gap-10"></div>
+    <div id="tab-roles" class="stack gap-14" style="display:none"></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const MODLABELS = { socios:'Sócios', planos:'Planos', cobrancas:'Cobranças', produtos:'Produtos', pedidos:'Pedidos & Retirada', eventos:'Eventos', financeiro:'Financeiro', loja:'Loja & Site' };
+let MODULES = [], ROLES = [], USERS = [];
+const $ = id => document.getElementById(id);
+
+async function load() {
+  const [m, r, u] = await Promise.all([AH.api.get('/admin/modules'), AH.api.get('/admin/roles'), AH.api.get('/admin/users')]);
+  MODULES = m.modules; ROLES = r.roles; USERS = u.users;
+  renderUsers(); renderRoles();
+}
+
+/* ---------- Usuários ---------- */
+function renderUsers() {
+  $('tab-users').innerHTML = USERS.map(u => {
+    const opts = ['<option value="">— sem cargo —</option>'].concat(ROLES.map(r => `<option value="${r.id}" ${u.director && u.director.roleId === r.id ? 'selected' : ''}>${AH.escape(r.name)}</option>`)).join('');
+    const badges = [];
+    if (u.isSuperAdmin) badges.push('<span class="pill pill--accent">admin oficial</span>');
+    if (u.member) badges.push('<span class="pill pill--success">sócio</span>');
+    if (u.director && !u.director.pinSet) badges.push('<span class="pill pill--warn">PIN pendente</span>');
+    return `<div class="urow">
+      <div class="acc-avatar" style="width:38px;height:38px">${AH.initials(u.name)}</div>
+      <div class="stack" style="line-height:1.3;min-width:160px"><strong style="font-size:14px">${AH.escape(u.name)}</strong><span class="dim" style="font-size:12px">${AH.escape(u.email)}</span></div>
+      <div class="row gap-6" style="flex-wrap:wrap">${badges.join('')}</div>
+      <div class="row gap-8 mla" style="flex-wrap:wrap;align-items:center">
+        <label class="dim" style="font-size:12px;display:flex;gap:6px;align-items:center">Cargo <select data-role="${u.id}">${opts}</select></label>
+        ${u.director && u.director.pinSet ? `<button class="btn" style="font-size:12px;padding:8px 10px" data-pin="${u.id}"><i class="ph ph-key"></i> Resetar PIN</button>` : ''}
+        <button class="btn" style="font-size:12px;padding:8px 10px" data-super="${u.id}" data-val="${u.isSuperAdmin ? 0 : 1}">${u.isSuperAdmin ? 'Tirar admin' : 'Tornar admin'}</button>
+      </div>
+    </div>`;
+  }).join('') || '<span class="dim">Nenhum usuário.</span>';
+
+  $('tab-users').querySelectorAll('select[data-role]').forEach(s => s.onchange = () => assignRole(s.dataset.role, s.value));
+  $('tab-users').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => resetPin(b.dataset.pin));
+  $('tab-users').querySelectorAll('[data-super]').forEach(b => b.onclick = () => toggleSuper(b.dataset.super, b.dataset.val === '1'));
+}
+
+async function assignRole(userId, roleId) {
+  try {
+    if (roleId) { await AH.api.post('/admin/users/' + userId + '/director', { roleId }); AH.toast('Cargo atribuído ✅'); }
+    else { await AH.api.del('/admin/users/' + userId + '/director'); AH.toast('Cargo removido'); }
+    await refresh();
+  } catch (e) { AH.toast(e.message, 'err'); await refresh(); }
+}
+async function resetPin(userId) {
+  if (!confirm('Resetar o PIN deste diretor? Ele vai criar um novo no próximo acesso ao painel.')) return;
+  try { await AH.api.post('/admin/users/' + userId + '/reset-pin', {}); AH.toast('PIN resetado ✅'); await refresh(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+async function toggleSuper(userId, val) {
+  if (!confirm(val ? 'Tornar este usuário administrador oficial (acesso total à gestão)?' : 'Remover o acesso de administrador deste usuário?')) return;
+  try { await AH.api.patch('/admin/users/' + userId, { isSuperAdmin: val }); AH.toast('Atualizado ✅'); await refresh(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+
+/* ---------- Cargos ---------- */
+function moduleChecks(selected, disabled) {
+  return `<div class="mchk">${MODULES.map(m => `<label><input type="checkbox" value="${m}" ${selected.includes(m) ? 'checked' : ''} ${disabled ? 'disabled' : ''}>${MODLABELS[m] || m}</label>`).join('')}</div>`;
+}
+function renderRoles() {
+  const cards = ROLES.map(r => `
+    <div class="rolecard" data-card="${r.id}">
+      <div class="row gap-10" style="align-items:center">
+        <input class="grow" style="background:var(--surface-0);border:1px solid var(--border-strong);border-radius:9px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:15px;font-weight:600" value="${AH.escape(r.name)}" ${r.isSystem ? 'disabled' : ''} data-name="${r.id}">
+        ${r.isSystem ? '<span class="badge-mini">sistema · acesso total</span>' : ''}
+        <span class="dim" style="font-size:12px">${r.count} pessoa(s)</span>
+      </div>
+      ${moduleChecks(r.modules, r.isSystem)}
+      ${r.isSystem ? '' : `<div class="row gap-8"><button class="btn btn--primary" style="font-size:12px;padding:8px 12px" data-save="${r.id}"><i class="ph ph-check"></i> Salvar</button><button class="btn" style="font-size:12px;padding:8px 12px;color:var(--danger-soft)" data-del="${r.id}"><i class="ph ph-trash"></i> Excluir</button></div>`}
+    </div>`).join('');
+
+  const novo = `<div class="rolecard" style="border-style:dashed">
+    <span class="label-cap">Novo cargo</span>
+    <input id="newName" placeholder="Nome do cargo (ex.: Tesoureiro)" style="background:var(--surface-0);border:1px solid var(--border-strong);border-radius:9px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:15px">
+    ${moduleChecks([], false)}
+    <button class="btn btn--primary" style="font-size:13px;padding:9px 14px;align-self:flex-start" id="createRole"><i class="ph ph-plus"></i> Criar cargo</button>
+  </div>`;
+
+  $('tab-roles').innerHTML = cards + novo;
+  $('tab-roles').querySelectorAll('[data-save]').forEach(b => b.onclick = () => saveRole(b.dataset.save));
+  $('tab-roles').querySelectorAll('[data-del]').forEach(b => b.onclick = () => delRole(b.dataset.del));
+  $('createRole').onclick = createRole;
+}
+function cardModules(card) { return [...card.querySelectorAll('.mchk input:checked')].map(i => i.value); }
+async function saveRole(id) {
+  const card = document.querySelector(`[data-card="${id}"]`);
+  const name = card.querySelector(`[data-name="${id}"]`).value.trim();
+  try { await AH.api.patch('/admin/roles/' + id, { name, modules: cardModules(card) }); AH.toast('Cargo salvo ✅'); await refresh(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+async function delRole(id) {
+  if (!confirm('Excluir este cargo? Quem tiver este cargo perde o acesso ao painel.')) return;
+  try { await AH.api.del('/admin/roles/' + id); AH.toast('Cargo excluído'); await refresh(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+async function createRole() {
+  const card = $('createRole').closest('.rolecard');
+  const name = $('newName').value.trim();
+  if (!name) { AH.toast('Dê um nome ao cargo', 'warn'); return; }
+  try { await AH.api.post('/admin/roles', { name, modules: cardModules(card) }); AH.toast('Cargo criado ✅'); await refresh(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+
+async function refresh() {
+  const [r, u] = await Promise.all([AH.api.get('/admin/roles'), AH.api.get('/admin/users')]);
+  ROLES = r.roles; USERS = u.users; renderUsers(); renderRoles();
+}
+
+/* ---------- Tabs + boot ---------- */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('tab-users').style.display = b.dataset.tab === 'users' ? '' : 'none';
+  $('tab-roles').style.display = b.dataset.tab === 'roles' ? '' : 'none';
+});
+
+(async function () {
+  if (!AH.guardAccount()) return;
+  const a = AH.session.account;
+  if (!a || !a.isSuperAdmin) { location.replace('/socio/home'); return; }
+  $('av').textContent = AH.initials(a.name);
+  const ws = AH.session.workspace || {};
+  if (ws.name) $('wsName').textContent = ws.name;
+  if (ws.logoKey) $('logo').src = AH.fileUrl(ws.logoKey);
+  $('logout').onclick = async () => { await AH.logout(); location.href = '/entrar'; };
+  try { await load(); } catch (e) { AH.toast(e.message, 'err'); }
+})();
+</script>
+</body>
+</html>

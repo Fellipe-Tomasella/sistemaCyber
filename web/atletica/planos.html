@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow">Planos de sócio</span><h1>Planos</h1></div>
+        <button class="btn btn--primary" id="newBtn"><i class="ph ph-plus"></i>Novo plano</button>
+      </div>
+    </header>
+    <div class="page-body">
+      <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px"></div>
+    </div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+const PERIODS = [{value:'semester',label:'Semestral'},{value:'annual',label:'Anual'},{value:'custom',label:'Custom'}];
+const PLABEL = {semester:'Semestral',annual:'Anual',custom:'Custom'};
+
+async function init(){
+  AH.renderRail('planos');
+  document.getElementById('newBtn').onclick = () => openForm();
+  await load();
+}
+async function load(){
+  let d; try { d = await AH.api.get('/plans'); } catch(e){ AH.toast(e.message,'err'); return; }
+  const grid = document.getElementById('grid');
+  if(!d.plans.length){ grid.innerHTML = '<div class="ah-empty" style="grid-column:1/-1"><i class="ph ph-identification-badge"></i><span>Nenhum plano ainda.</span></div>'; return; }
+  grid.innerHTML = d.plans.map(p => `
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px;${p.active?'':'opacity:.55'}">
+      <div class="row" style="justify-content:space-between">
+        <span class="pill pill--accent">${PLABEL[p.period]||p.period}</span>
+        ${p.active?'':'<span class="pill pill--neutral">inativo</span>'}
+      </div>
+      <div class="stack" style="gap:2px">
+        <strong style="font-size:17px">${AH.escape(p.name)}</strong>
+        <span class="display num" style="font-size:34px">${AH.fmtBRL(p.priceCents)}</span>
+        <span class="dim" style="font-size:12px">${p.durationMonths} meses</span>
+      </div>
+      <div class="stack gap-6" style="font-size:12.5px;color:var(--text-soft)">
+        ${(p.benefits||[]).map(b=>`<span class="row gap-8"><i class="ph ph-check" style="color:var(--success)"></i>${AH.escape(b)}</span>`).join('')||'<span class="dim">Sem benefícios listados</span>'}
+      </div>
+      <button class="btn" style="margin-top:auto" onclick='edit(${JSON.stringify(p).replace(/'/g,"&#39;")})'><i class="ph ph-pencil-simple"></i>Editar</button>
+    </div>`).join('');
+}
+function openForm(p){
+  const edit = !!p;
+  AH.formModal({
+    title: edit?'Editar plano':'Novo plano',
+    fields:[
+      {name:'name',label:'Nome',required:true,value:p?.name},
+      {name:'period',label:'Período',type:'select',options:PERIODS,value:p?.period||'semester'},
+      {name:'priceCents',label:'Preço (R$)',type:'money',required:true,value:p?(p.priceCents/100):''},
+      {name:'durationMonths',label:'Duração (meses)',type:'number',required:true,value:p?.durationMonths??6},
+      {name:'benefits',label:'Benefícios (um por linha)',type:'textarea',value:(p?.benefits||[]).join('\n')},
+      ...(edit?[{name:'active',label:'Ativo',type:'checkbox',value:p.active}]:[]),
+    ],
+    onSubmit: async (v) => {
+      const payload = { name:v.name, period:v.period, priceCents:v.priceCents, durationMonths:v.durationMonths, benefits:v.benefits?v.benefits.split('\n').map(s=>s.trim()).filter(Boolean):[] };
+      if(edit){ payload.active=v.active; await AH.api.patch('/plans/'+p.id, payload); } else { await AH.api.post('/plans', payload); }
+      AH.toast(edit?'Plano atualizado':'Plano criado'); load();
+    }
+  });
+}
+window.edit = (p)=>openForm(p);
+if(AH.guard('director') && AH.guardModule('planos')) init();
+</script>
+</body>
+</html>

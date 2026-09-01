@@ -1,0 +1,82 @@
+/* ============================================================
+   AtléticaHub — Design Tokens (direção "Arena")
+   Extraído das telas do Claude Design. Tema dark nativo.
+   A cor primária de cada atlética pode sobrescrever
+   --brand / --brand-accent via style inline no <body data-brand>.
+   ============================================================ */
+:root {
+  /* Superfícies */
+  --bg:            #0a0c11;   /* fundo da página / canvas externo */
+  --surface-0:     #0d1117;   /* frame do app */
+  --surface-sidebar:#0a0d13;  /* sidebar */
+  --surface-1:     #121822;   /* painéis / cards */
+  --surface-2:     #16202d;   /* hover / raised */
+  --surface-3:     #0f151e;   /* cabeçalho de tabela / sub-painel */
+
+  /* Bordas */
+  --border:        #1b2534;
+  --border-strong: #24374f;
+  --border-hair:   #161e29;
+
+  /* Marca (sobrescritível por atlética) */
+  --brand:         #0077ff;   /* azul primário — ações */
+  --brand-accent:  #00bfff;   /* ciano — brilho/linha/destaque */
+  --brand-bright:  #00e0ff;   /* ciano claro — topo de gradiente */
+  --brand-deep:    #10406e;   /* azul profundo — heros radiais */
+  --brand-ink:     #06121f;   /* texto sobre ciano */
+
+  /* Texto */
+  --text:          #e9e9ed;
+  --text-soft:     #cfd9e5;
+  --text-muted:    #8fa3bb;
+  --text-dim:      #6b7c92;
+  --text-faint:    #4d5f75;
+  --text-brand:    #7ab4ff;
+  --text-brand-2:  #7fdcff;
+
+  /* Semânticas */
+  --success:       #4ade80;
+  --success-strong:#16a34a;
+  --success-soft:  #86efac;
+  --warn:          #fbbf24;
+  --warn-soft:     #fcd34d;
+  --danger:        #ef4444;
+  --danger-soft:   #f87171;
+  --danger-faint:  #fca5a5;
+
+  /* Fundos translúcidos de status (pills / chips) */
+  --tint-brand:    rgba(0,119,255,0.14);
+  --tint-accent:   rgba(0,191,255,0.14);
+  --tint-success:  rgba(74,222,128,0.14);
+  --tint-warn:     rgba(251,191,36,0.14);
+  --tint-danger:   rgba(239,68,68,0.16);
+
+  /* Tipografia */
+  --font-display: 'Anton', 'Arial Narrow', sans-serif;
+  --font-ui:      'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Raios */
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 14px;
+  --r-2xl: 16px;
+  --r-pill: 999px;
+
+  /* Sombras / glows */
+  --shadow-panel: 0 0 0 1px var(--border), 0 24px 60px rgba(0,0,0,0.6);
+  --shadow-btn:   0 6px 20px rgba(0,119,255,0.4);
+  --shadow-btn-lg:0 10px 28px rgba(0,119,255,0.42);
+  --glow-accent:  0 0 22px rgba(0,191,255,0.45);
+  --glow-soft:    0 0 40px rgba(0,119,255,0.2);
+
+  /* Layout */
+  --rail-w: 76px;        /* sidebar estreita (ícones) */
+  --sidebar-w: 232px;    /* sidebar larga (opcional) */
+  --topbar-h: 74px;
+
+  /* Padrões decorativos reutilizáveis */
+  --hatch: repeating-linear-gradient(115deg, rgba(0,191,255,0.09) 0 2px, transparent 2px 34px);
+  --hero-radial: radial-gradient(125% 115% at 75% 12%, var(--brand-deep) 0%, #0b1a2c 48%, #0a0d13 100%);
+  --hero-band: linear-gradient(115deg, #0b1c33 0%, #0d1117 62%);
+}

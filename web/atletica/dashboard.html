@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+
+  <div class="main">
+    <!-- ===== HERO ===== -->
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6">
+          <span class="eyebrow" id="ws-eyebrow">Atlética</span>
+          <h1 id="hero-h1">Visão geral</h1>
+        </div>
+        <div class="row gap-8" style="flex:none">
+          <button class="btn" id="exportDre"><i class="ph ph-export"></i>Exportar DRE</button>
+          <a class="btn btn--primary" href="financeiro"><i class="ph ph-plus"></i>Novo lançamento</a>
+        </div>
+      </div>
+
+      <div class="kpi-strip" style="margin-top:22px">
+        <div class="kpi-strip__cell">
+          <span class="kpi-strip__k">Sócios ativos</span>
+          <span class="kpi-strip__v" id="kpi-active">—</span>
+          <span style="font-size:12px;color:var(--success)" id="kpi-active-sub">&nbsp;</span>
+        </div>
+        <div class="kpi-strip__cell">
+          <span class="kpi-strip__k">Inadimplentes</span>
+          <span class="kpi-strip__v" style="color:var(--warn-soft)" id="kpi-overdue">—</span>
+          <span style="font-size:12px;color:var(--text-muted)" id="kpi-overdue-sub">&nbsp;</span>
+        </div>
+        <div class="kpi-strip__cell">
+          <span class="kpi-strip__k">Receita do mês</span>
+          <span class="kpi-strip__v" id="kpi-income">—</span>
+          <span style="font-size:12px;color:var(--success)" id="kpi-income-sub">&nbsp;</span>
+        </div>
+        <div class="kpi-strip__cell kpi-strip__cell--accent">
+          <span class="kpi-strip__k" style="color:#b4d3ff">Saldo em caixa</span>
+          <span class="kpi-strip__v" style="color:#fff" id="kpi-balance">—</span>
+          <span style="font-size:12px;color:#9fd2ff" id="kpi-balance-sub">&nbsp;</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== BODY ===== -->
+    <div class="page-body">
+      <div class="dash-grid">
+
+        <!-- coluna esquerda -->
+        <div class="stack gap-16" style="min-height:0">
+          <!-- Receita x Despesa -->
+          <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+            <div class="panel__head">
+              <strong class="panel__title panel__title--display">Receita × Despesa</strong>
+              <div class="row gap-14" style="font-size:11.5px;color:var(--text-muted)">
+                <span class="row gap-6"><span class="sw" style="width:9px;height:9px;border-radius:2px;background:var(--brand-accent)"></span>Receita</span>
+                <span class="row gap-6"><span class="sw" style="width:9px;height:9px;border-radius:2px;background:#24374f"></span>Despesa</span>
+              </div>
+            </div>
+            <div class="bars" id="bars"></div>
+          </div>
+
+          <!-- Pendências -->
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+            <div class="panel__head">
+              <strong class="panel__title">Pendências</strong>
+              <span class="badge-count">5 abertas</span>
+            </div>
+            <div class="row" style="flex-wrap:wrap;gap:8px" id="todos"></div>
+          </div>
+        </div>
+
+        <!-- coluna direita -->
+        <div class="stack gap-16" style="min-height:0">
+          <!-- Sócios por status -->
+          <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+            <strong class="panel__title">Sócios por status</strong>
+            <div class="row gap-16">
+              <div class="donut" id="donut" style="background:conic-gradient(var(--border) 0 100%)">
+                <div class="donut__hole">
+                  <div class="stack" style="line-height:1.05">
+                    <span class="display num" style="font-size:24px" id="donut-pct">—</span>
+                    <span style="font-size:9.5px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase">em dia</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stack grow" style="gap:9px">
+                <div class="legend-item"><span class="sw" style="background:var(--brand-accent)"></span>Ativos<span class="val" id="lg-active">—</span></div>
+                <div class="legend-item"><span class="sw" style="background:var(--warn)"></span>A vencer<span class="val" id="lg-pending">—</span></div>
+                <div class="legend-item"><span class="sw" style="background:var(--danger)"></span>Inadimplentes<span class="val" id="lg-overdue">—</span></div>
+              </div>
+            </div>
+            <div class="stack gap-10" style="padding-top:12px;border-top:1px solid var(--border)">
+              <span class="label-cap">Receita por fonte</span>
+              <div class="stack gap-10" id="sources"></div>
+            </div>
+          </div>
+
+          <!-- Próximos eventos -->
+          <div class="panel" style="display:flex;flex-direction:column;gap:12px;flex:1;min-height:0">
+            <div class="panel__head">
+              <strong class="panel__title">Próximos eventos</strong>
+              <a href="eventos" style="font-size:12px;color:var(--brand-accent)">gerenciar</a>
+            </div>
+            <div class="stack gap-12" id="events"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const $ = (id) => document.getElementById(id);
+const evStatus = { selling:['Vendendo','pill--accent'], draft:['Rascunho','pill--neutral'], closed:['Encerrado','pill--warn'], finished:['Finalizado','pill--neutral'] };
+
+async function exportDre() {
+  let tx, ccs;
+  try { [tx, ccs] = await Promise.all([AH.api.get('/transactions'), AH.api.get('/cost-centers')]); }
+  catch (e) { AH.toast(e.message, 'err'); return; }
+  const ccName = {}; ccs.costCenters.forEach(c => ccName[c.id] = c.name);
+  const grp = { income: {}, expense: {} }; let inc = 0, exp = 0;
+  tx.transactions.forEach(r => { const n = ccName[r.costCenterId] || 'Outros'; grp[r.type][n] = (grp[r.type][n] || 0) + r.amountCents; if (r.type === 'income') inc += r.amountCents; else exp += r.amountCents; });
+  const brl = c => (c / 100).toFixed(2).replace('.', ',');
+  const rows = [['RECEITAS', '']];
+  Object.entries(grp.income).sort((a, b) => b[1] - a[1]).forEach(([n, v]) => rows.push([n, brl(v)]));
+  rows.push(['Total de receitas', brl(inc)], ['', ''], ['DESPESAS', '']);
+  Object.entries(grp.expense).sort((a, b) => b[1] - a[1]).forEach(([n, v]) => rows.push([n, brl(v)]));
+  rows.push(['Total de despesas', brl(exp)], ['', ''], ['RESULTADO', brl(inc - exp)]);
+  AH.downloadCSV('dre-' + new Date().toISOString().slice(0, 10) + '.csv', ['Descrição', 'Valor'], rows);
+  AH.toast('DRE exportado ✅');
+}
+
+async function init() {
+  AH.renderRail('dashboard');
+  const eb = $('exportDre'); if (eb) eb.onclick = exportDre;
+  const ws = AH.session.workspace;
+  $('ws-eyebrow').textContent = ws ? `${ws.name}${ws.university ? ' · ' + ws.university : ''}` : 'Painel da diretoria';
+
+  let d;
+  try { d = await AH.api.get('/dashboard'); }
+  catch (e) { AH.toast(e.message || 'Erro ao carregar', 'err'); return; }
+
+  const k = d.kpis;
+  $('kpi-active').textContent = k.activeMembers;
+  $('kpi-overdue').textContent = k.overdueMembers;
+  $('kpi-overdue-sub').textContent = k.overdueAmountCents ? AH.fmtBRLk(k.overdueAmountCents) + ' em aberto' : 'em dia';
+  $('kpi-income').textContent = AH.fmtBRLk(k.monthIncomeCents);
+  $('kpi-balance').textContent = AH.fmtBRLk(k.balanceCents);
+
+  // Headline: variação do mês vs anterior
+  const m = d.revenueByMonth || [];
+  const cur = m[m.length - 1], prev = m[m.length - 2];
+  if (cur && prev && prev.income > 0) {
+    const delta = Math.round((cur.income / prev.income - 1) * 100);
+    const dir = delta >= 0 ? 'acima' : 'abaixo';
+    $('hero-h1').innerHTML = `${cur.label} fechou<br><span style="color:var(--brand-accent)">${Math.abs(delta)}% ${dir}</span> de ${prev.label}`;
+    $('kpi-income-sub').textContent = `${delta >= 0 ? '+' : ''}${delta}% vs. ${prev.label}`;
+  } else {
+    $('hero-h1').textContent = 'Visão geral';
+  }
+
+  // Gráfico de barras
+  const max = Math.max(1, ...m.flatMap(x => [x.income, x.expense]));
+  $('bars').innerHTML = m.map(x => `
+    <div class="bars__col">
+      <div class="bars__pair" style="height:190px">
+        <div class="bar bar--rev" style="height:${Math.round(x.income/max*100)}%"></div>
+        <div class="bar bar--exp" style="height:${Math.round(x.expense/max*100)}%"></div>
+      </div>
+      <span style="font-size:12px;color:var(--text-muted);padding-bottom:9px;letter-spacing:0.06em;text-transform:uppercase">${x.label}</span>
+    </div>`).join('');
+
+  // Donut sócios por status
+  const s = d.membersByStatus;
+  const total = Math.max(1, (s.active||0)+(s.overdue||0)+(s.expired||0)+(s.pending||0)+(s.cancelled||0));
+  const pAtivo = (s.active/total*100), pVencer = ((s.pending)/total*100);
+  const g1 = pAtivo.toFixed(1), g2 = (pAtivo+pVencer).toFixed(1);
+  $('donut').style.background = `conic-gradient(var(--brand-accent) 0 ${g1}%, var(--warn) ${g1}% ${g2}%, var(--danger) ${g2}% 100%)`;
+  $('donut-pct').textContent = Math.round(pAtivo) + '%';
+  $('lg-active').textContent = s.active; $('lg-pending').textContent = s.pending; $('lg-overdue').textContent = s.overdue + (s.expired||0);
+
+  // Receita por fonte
+  $('sources').innerHTML = (d.revenueBySources||[]).map(src => `
+    <div class="row gap-10" style="font-size:12px">
+      <span style="width:82px;color:var(--text-soft)" class="ellipsis">${AH.escape(src.label)}</span>
+      <span class="meter grow"><span style="width:${src.pct}%"></span></span>
+      <span class="num" style="width:34px;text-align:right;color:var(--text-muted)">${src.pct}%</span>
+    </div>`).join('') || '<span class="dim" style="font-size:12px">Sem receitas ainda</span>';
+
+  // Próximos eventos
+  const evs = d.upcomingEvents || [];
+  $('events').innerHTML = evs.length ? evs.map(e => {
+    const dt = e.eventDate ? new Date(e.eventDate) : null;
+    const [lbl, cls] = evStatus[e.status] || ['—','pill--neutral'];
+    return `<div class="event-card">
+      <div class="row gap-12">
+        <div class="date-box"><span class="d">${dt ? String(dt.getDate()).padStart(2,'0') : '--'}</span><span class="m">${dt ? MONTHS[dt.getMonth()] : ''}</span></div>
+        <div class="grow stack" style="line-height:1.3">
+          <span style="font-size:13.5px;font-weight:600" class="ellipsis">${AH.escape(e.name)}</span>
+          <span style="font-size:11.5px;color:var(--text-dim)" class="ellipsis">${AH.escape(e.location||'')}</span>
+        </div>
+        <span class="pill ${cls}">${lbl}</span>
+      </div>
+    </div>`;
+  }).join('') : '<span class="dim" style="font-size:12.5px">Nenhum evento cadastrado</span>';
+
+  // Pendências (derivadas)
+  await renderPendencias(k);
+}
+
+async function renderPendencias(k) {
+  const todos = [];
+  if (k.overdueMembers) todos.push({ dot:'var(--danger)', t:`${k.overdueMembers} sócios inadimplentes`, m: AH.fmtBRLk(k.overdueAmountCents) + ' em aberto' });
+  try {
+    const o = await AH.api.get('/orders?payment=pending');
+    if (o.orders.length) todos.push({ dot:'var(--warn)', t:`${o.orders.length} pedidos aguardando pagamento`, m:'confirmar na loja' });
+  } catch {}
+  try {
+    const q = await AH.api.get('/pickup/queue');
+    if (q.queue.length) todos.push({ dot:'var(--warn)', t:`${q.queue.length} pedidos para retirada`, m:'no balcão' });
+  } catch {}
+  const host = document.getElementById('todos');
+  host.innerHTML = todos.length ? todos.map(t => `
+    <div class="row gap-10" style="padding:8px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border-strong)">
+      <span style="width:7px;height:7px;border-radius:50%;background:${t.dot}"></span>
+      <span style="font-size:12.5px;font-weight:500">${t.t}</span>
+      <span style="font-size:11.5px;color:var(--text-dim)">${t.m}</span>
+    </div>`).join('') : '<span class="dim" style="font-size:12.5px">Tudo em dia ✅</span>';
+}
+
+if (AH.guard('director')) init();
+</script>
+
+<style>
+.dash-grid { display:grid; grid-template-columns: 1.6fr 1fr; gap:16px; align-items:start; }
+@media (max-width: 1100px){ .dash-grid { grid-template-columns:1fr; } }
+</style>
+</body>
+</html>

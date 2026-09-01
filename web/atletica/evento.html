@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evento — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>.ev-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}@media(max-width:1000px){.ev-grid{grid-template-columns:1fr}}</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6">
+          <a href="eventos" class="eyebrow" style="color:var(--text-muted)"><i class="ph ph-arrow-left"></i> Eventos</a>
+          <h1 id="ev-name">—</h1>
+          <span class="dim" id="ev-meta"></span>
+        </div>
+        <div class="row gap-8"><span class="pill" id="ev-status">—</span></div>
+      </div>
+      <div class="kpi-strip" style="margin-top:18px">
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Ingressos vendidos</span><span class="kpi-strip__v" id="k-sold" style="font-size:34px">0</span></div>
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Check-ins</span><span class="kpi-strip__v" id="k-checkin" style="font-size:34px">0</span></div>
+        <div class="kpi-strip__cell kpi-strip__cell--accent"><span class="kpi-strip__k" style="color:#b4d3ff">Resultado</span><span class="kpi-strip__v" id="k-result" style="font-size:34px;color:#fff">—</span></div>
+        <div class="kpi-strip__cell"><span class="kpi-strip__k">Capacidade</span><span class="kpi-strip__v" id="k-cap" style="font-size:34px">—</span></div>
+      </div>
+    </header>
+    <div class="page-body">
+      <div class="ev-grid">
+        <!-- LOTES -->
+        <div class="panel panel--pad0" style="overflow:hidden">
+          <div class="row" style="justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border)">
+            <strong class="panel__title--display">Lotes</strong>
+            <button class="btn btn--primary" id="addBatch" style="font-size:12px;padding:7px 12px"><i class="ph ph-plus"></i>Novo lote</button>
+          </div>
+          <div id="batches"></div>
+        </div>
+        <!-- CHECK-IN + PRESTAÇÃO -->
+        <div class="stack gap-18">
+          <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+            <strong class="panel__title--display">Check-in</strong>
+            <div class="search"><i class="ph ph-qr-code" style="font-size:18px;color:var(--brand-accent)"></i><input id="checkinInput" placeholder="Cole o QR do ingresso (uuid.sig)"></div>
+            <button class="btn btn--primary btn--block" id="checkinBtn"><i class="ph-fill ph-check-circle"></i>Validar ingresso</button>
+            <div id="checkinResult" style="font-size:13px"></div>
+          </div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+            <strong class="panel__title--display">Prestação de contas</strong>
+            <div class="row" style="justify-content:space-between;font-size:13px"><span class="muted">Receitas</span><span class="num" style="color:var(--success);font-weight:600" id="s-in">—</span></div>
+            <div class="row" style="justify-content:space-between;font-size:13px"><span class="muted">Despesas</span><span class="num" style="color:var(--danger-soft);font-weight:600" id="s-out">—</span></div>
+            <div class="row" style="justify-content:space-between;padding-top:9px;border-top:1px solid var(--border)"><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#b4d3ff;font-weight:600">Resultado</span><span class="display num" id="s-res" style="font-size:22px">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+const ST={selling:['Vendendo','pill--accent'],draft:['Rascunho','pill--neutral'],closed:['Encerrado','pill--warn'],finished:['Finalizado','pill--neutral']};
+const ID=new URLSearchParams(location.search).get('id');
+async function init(){ AH.renderRail('eventos'); if(!ID){location.href='eventos';return;} document.getElementById('addBatch').onclick=addBatch; document.getElementById('checkinBtn').onclick=checkin; await load(); }
+async function load(){
+  let d,s; try{ [d,s]=await Promise.all([AH.api.get('/events/'+ID),AH.api.get('/events/'+ID+'/settlement')]); }catch(e){ AH.toast(e.message,'err'); return; }
+  const e=d.event, dt=e.eventDate?new Date(e.eventDate):null;
+  document.getElementById('ev-name').textContent=e.name;
+  document.getElementById('ev-meta').textContent=[e.location, dt?dt.toLocaleString('pt-BR'):''].filter(Boolean).join(' · ');
+  const [lbl,cls]=ST[e.status]||ST.draft; const st=document.getElementById('ev-status'); st.className='pill '+cls; st.textContent=lbl;
+  document.getElementById('k-sold').textContent=d.stats.sold;
+  document.getElementById('k-checkin').textContent=d.stats.checkedIn;
+  document.getElementById('k-cap').textContent=e.capacity||'—';
+  document.getElementById('k-result').textContent=AH.fmtBRLk(s.result);
+  document.getElementById('s-in').textContent=AH.fmtBRL(s.income);
+  document.getElementById('s-out').textContent=AH.fmtBRL(s.expense);
+  document.getElementById('s-res').textContent=(s.result>=0?'+':'')+AH.fmtBRL(s.result);
+  const host=document.getElementById('batches');
+  host.innerHTML=d.batches.length?d.batches.map(b=>`
+    <div class="row gap-12" style="padding:13px 18px;border-bottom:1px solid var(--border-hair)">
+      <div class="grow stack" style="line-height:1.3"><strong style="font-size:14px">${AH.escape(b.name)}</strong><span class="dim" style="font-size:12px">${b.quantitySold}/${b.quantityTotal} vendidos</span></div>
+      <span class="display num" style="font-size:18px">${AH.fmtBRL(b.priceCents)}</span>
+      <button class="btn" style="font-size:12px;padding:7px 12px" onclick="issue('${b.id}','${AH.escape(b.name)}')">Emitir</button>
+    </div>`).join(''):'<div class="ah-empty"><i class="ph ph-ticket"></i><span>Sem lotes. Crie o 1º lote.</span></div>';
+}
+async function addBatch(){
+  AH.formModal({title:'Novo lote',fields:[
+    {name:'name',label:'Nome',value:'1º lote',required:true},
+    {name:'priceCents',label:'Preço (R$)',type:'money',required:true},
+    {name:'quantityTotal',label:'Quantidade',type:'number',value:100},
+  ],onSubmit:async(v)=>{ await AH.api.post('/events/'+ID+'/batches',{name:v.name,priceCents:v.priceCents,quantityTotal:v.quantityTotal}); AH.toast('Lote criado'); load(); }});
+}
+async function issue(batchId,name){
+  AH.formModal({title:'Emitir ingresso — '+name,fields:[
+    {name:'buyerName',label:'Nome do comprador',required:true},
+    {name:'buyerEmail',label:'E-mail'},
+    {name:'paid',label:'Já está pago',type:'checkbox',value:true},
+  ],submitLabel:'Emitir',onSubmit:async(v)=>{ await AH.api.post('/events/'+ID+'/tickets',{batchId,buyerName:v.buyerName,buyerEmail:v.buyerEmail,paid:v.paid}); AH.toast('Ingresso emitido'); load(); }});
+}
+async function checkin(){
+  const raw=document.getElementById('checkinInput').value.trim(); if(!raw) return;
+  const uuid=raw.split('.')[0];
+  const box=document.getElementById('checkinResult');
+  try{ const r=await AH.api.post('/tickets/'+uuid+'/checkin',{}); box.innerHTML=`<div class="pill pill--success" style="font-size:13px;padding:8px 14px"><i class="ph-fill ph-check-circle"></i> Check-in OK — ${AH.escape(r.ticket.buyerName||'ingresso')}</div>`; AH.toast('Check-in confirmado ✅'); load(); }
+  catch(e){ box.innerHTML=`<div class="pill pill--danger" style="font-size:13px;padding:8px 14px"><i class="ph-fill ph-x-circle"></i> ${AH.escape(e.message)}</div>`; }
+  document.getElementById('checkinInput').value='';
+}
+window.issue=issue;
+if(AH.guard('director') && AH.guardModule('eventos')) init();
+</script>
+</body>
+</html>

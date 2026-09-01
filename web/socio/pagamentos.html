@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagamentos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/conta.css">
+</head>
+<body>
+<div class="conta">
+  <div class="conta-top" id="contaTop"></div>
+  <div class="conta-body">
+    <div class="stack gap-4"><h1 class="display" style="font-size:26px;margin:0">Pagamentos</h1><span class="dim" style="font-size:13px">Renove seu plano e acompanhe seu histórico.</span></div>
+    <div id="content"></div>
+  </div>
+  <nav class="conta-bottom" id="contaBottom"></nav>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/conta.js"></script>
+<script>
+const ST = { pending:['Pendente','pill--warn'], paid:['Pago','pill--success'], overdue:['Vencida','pill--danger'], cancelled:['Cancelada','pill--neutral'] };
+
+(async function () {
+  const a = AH.conta.init('pagamentos');
+  if (!a) return;
+  const content = document.getElementById('content');
+
+  if (!a.member) {
+    content.innerHTML = `<div class="acc-panel" style="align-items:flex-start;max-width:520px"><span class="label-cap">Plano de sócio</span><strong style="font-size:16px">Você ainda não é sócio</strong><span class="dim" style="font-size:13px">Vire sócio pra ter carteirinha, desconto na loja e ingresso no lote sócio.</span><a class="btn btn--primary btn--conta" href="/seja-socio"><i class="ph-fill ph-identification-badge"></i> Quero ser sócio</a></div>`;
+    return;
+  }
+
+  content.innerHTML = `<div class="conta-grid">
+    <div class="acc-panel"><span class="label-cap">Renovar plano</span><div id="plans" class="stack gap-10"></div></div>
+    <div class="acc-panel"><span class="label-cap">Histórico</span><div id="pays" class="stack gap-8"></div></div>
+  </div>`;
+
+  let pays, store;
+  try { [pays, store] = await Promise.all([AH.api.get('/me/payments'), AH.api.get('/store/' + AH.session.slug, { auth: false })]); }
+  catch (e) { AH.toast(e.message, 'err'); return; }
+
+  document.getElementById('plans').innerHTML = (store.plans || []).map(p => `
+    <div class="row gap-12" style="padding:12px;border-radius:12px;background:var(--surface-0);border:1px solid var(--border-strong)">
+      <div class="grow stack"><strong style="font-size:14px">${AH.escape(p.name)}</strong><span class="dim" style="font-size:12px">${p.durationMonths} meses</span></div>
+      <span class="display num" style="font-size:20px">${AH.fmtBRL(p.priceCents)}</span>
+      <button class="btn btn--primary" style="font-size:12px;padding:8px 12px" onclick="renew('${p.id}','${AH.escape(p.name).replace(/'/g,'&#39;')}')">Renovar</button>
+    </div>`).join('') || '<span class="dim" style="font-size:12.5px">Sem planos disponíveis</span>';
+
+  document.getElementById('pays').innerHTML = (pays.payments && pays.payments.length) ? pays.payments.map(p => {
+    const [lbl, cls] = ST[p.status] || ST.pending;
+    return `<div class="pay-row"><span class="pill ${cls}">${lbl}</span><span class="grow">${AH.fmtBRL(p.amountCents)}</span><span class="dim">${AH.fmtDate(p.dueDate)}</span></div>`;
+  }).join('') : '<span class="dim" style="font-size:12.5px">Nenhum pagamento ainda</span>';
+})();
+
+async function renew(planId, name) {
+  if (!confirm('Solicitar renovação do plano ' + name + '? A diretoria confirmará o pagamento.')) return;
+  try { await AH.api.post('/me/renew', { planId }); AH.toast('Renovação solicitada ✅'); location.reload(); }
+  catch (e) { AH.toast(e.message, 'err'); }
+}
+window.renew = renew;
+</script>
+</body>
+</html>

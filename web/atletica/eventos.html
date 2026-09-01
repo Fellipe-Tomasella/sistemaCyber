@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero">
+      <div class="hero__row">
+        <div class="stack gap-6"><span class="eyebrow">Festas & jogos</span><h1>Eventos</h1></div>
+        <button class="btn btn--primary" id="newBtn"><i class="ph ph-plus"></i>Novo evento</button>
+      </div>
+    </header>
+    <div class="page-body">
+      <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
+    </div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const ST={selling:['Vendendo','pill--accent'],draft:['Rascunho','pill--neutral'],closed:['Encerrado','pill--warn'],finished:['Finalizado','pill--neutral']};
+async function init(){ AH.renderRail('eventos'); document.getElementById('newBtn').onclick=newEvent; await load(); }
+async function load(){
+  let d; try{ d=await AH.api.get('/events'); }catch(e){ AH.toast(e.message,'err'); return; }
+  const grid=document.getElementById('grid');
+  if(!d.events.length){ grid.innerHTML='<div class="ah-empty" style="grid-column:1/-1"><i class="ph ph-confetti"></i><span>Nenhum evento ainda.</span></div>'; return; }
+  grid.innerHTML=d.events.map(e=>{
+    const dt=e.eventDate?new Date(e.eventDate):null;
+    const [lbl,cls]=ST[e.status]||ST.draft;
+    return `<a class="panel" href="evento?id=${e.id}" style="display:flex;flex-direction:column;gap:12px;color:var(--text);text-decoration:none">
+      <div class="row" style="justify-content:space-between"><span class="pill ${cls}">${lbl}</span>${dt?`<span class="dim" style="font-size:12px">${String(dt.getDate()).padStart(2,'0')} ${MONTHS[dt.getMonth()]}</span>`:''}</div>
+      <strong style="font-size:18px">${AH.escape(e.name)}</strong>
+      <span class="dim" style="font-size:12.5px"><i class="ph ph-map-pin"></i> ${AH.escape(e.location||'local a definir')}</span>
+      <span class="row gap-6" style="margin-top:auto;font-size:12.5px;color:var(--brand-accent)">Gerenciar <i class="ph ph-arrow-right"></i></span>
+    </a>`;
+  }).join('');
+}
+async function newEvent(){
+  AH.formModal({
+    title:'Novo evento',
+    fields:[
+      {name:'name',label:'Nome',required:true},
+      {name:'location',label:'Local'},
+      {name:'eventDate',label:'Data e hora',type:'text',placeholder:'2026-08-29T23:00',hint:'aaaa-mm-ddThh:mm'},
+      {name:'capacity',label:'Capacidade',type:'number'},
+      {name:'status',label:'Status',type:'select',options:[{value:'draft',label:'Rascunho'},{value:'selling',label:'Vendendo'}],value:'draft'},
+    ],
+    onSubmit: async(v)=>{ await AH.api.post('/events',{name:v.name,location:v.location,eventDate:v.eventDate||undefined,capacity:v.capacity||undefined,status:v.status}); AH.toast('Evento criado'); load(); }
+  });
+}
+if(AH.guard('director') && AH.guardModule('eventos')) init();
+</script>
+</body>
+</html>

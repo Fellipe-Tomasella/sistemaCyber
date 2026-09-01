@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A.A.A.S.I. Cyber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="/vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/store.css">
+</head>
+<body>
+<div class="store">
+  <div id="siteNav"></div>
+
+  <!-- 1) BANNER anunciativo (topo, fixo se 1 / rotativo se +1) -->
+  <section class="banner-wrap" id="bannerSection">
+    <div class="banner-rail" id="bannerRail"></div>
+    <div class="banner-dots" id="bannerDots"></div>
+  </section>
+
+  <!-- 2) HERO / breve história da atlética -->
+  <section class="hero-store">
+    <div class="hero-store__row">
+      <div class="grow stack gap-18">
+        <span id="heroEyebrow" style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--brand-accent);font-weight:600"></span>
+        <h1>O café é forte,<br>a torcida é <span style="color:var(--brand-accent)">mais</span></h1>
+        <p style="margin:0;max-width:470px;font-size:15.5px;color:#a9bacd">Ingressos, merch e plano de sócio da Atlética Cyber num só lugar. Sócio paga menos em tudo — sempre.</p>
+        <div class="row gap-12" style="margin-top:4px;flex-wrap:wrap">
+          <a class="btn btn--primary btn--hero" href="/eventos"><i class="ph-fill ph-ticket" style="font-size:20px"></i>Garantir ingresso</a>
+          <a class="btn btn--hero" href="/seja-socio" style="border-color:#2a5c8a">Virar sócio</a>
+        </div>
+      </div>
+      <img class="hero-store__brasao" src="/assets/brasao-cyber.jpeg" alt="Brasão">
+    </div>
+  </section>
+
+  <!-- 3) PARCEIROS & PATROCINADORES (abaixo da história) -->
+  <section class="section" id="partnersSection">
+    <h2>Parceiros &amp; patrocinadores</h2>
+    <div class="marquee"><div class="marquee__track" id="partners"></div></div>
+  </section>
+
+  <!-- Próximo evento -->
+  <section class="section">
+    <div class="row" style="align-items:baseline;gap:12px"><h2>Próximo evento</h2><a href="/eventos">ver todos os eventos →</a></div>
+    <div id="featEvent"></div>
+  </section>
+
+  <!-- Loja -->
+  <section class="section">
+    <div class="row" style="align-items:baseline;gap:12px"><h2>Loja da Cyber</h2><a href="/loja">ver a loja completa →</a></div>
+    <div class="products" id="products"></div>
+  </section>
+
+  <!-- Diretoria -->
+  <section class="section" id="boardSection" style="display:none">
+    <div class="stack gap-6"><h2>Conheça quem faz a atlética acontecer</h2><span class="dim" style="font-size:13px">A diretoria que torna a Cyber possível hoje.</span></div>
+    <div class="marquee"><div class="marquee__track" id="board" style="padding-block:8px"></div></div>
+  </section>
+
+  <!-- Galeria da Cyber (jogos, eventos, trotes) -->
+  <section class="section" id="gallerySection" style="display:none">
+    <div class="stack gap-6"><h2>Galeria da Cyber</h2><span class="dim" style="font-size:13px">Jogos, eventos e trotes — a atlética em movimento.</span></div>
+    <div class="gal-feature"><div class="gal-main" id="galMain"></div><div class="gal-side" id="galSide1"></div><div class="gal-side" id="galSide2"></div></div>
+    <div class="gal-thumbs" id="galThumbs"></div>
+  </section>
+
+  <!-- Vire sócio -->
+  <section class="join">
+    <div class="join__row">
+      <div class="grow stack gap-10">
+        <span style="font-size:11.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-brand-2);font-weight:600">Plano de sócio</span>
+        <h2 class="display" style="font-size:40px">Vire sócio e pague menos em tudo</h2>
+        <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:4px" id="benefits"></div>
+      </div>
+      <div class="join__price">
+        <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);font-weight:600" id="plan-name">Plano</span>
+        <div class="row" style="align-items:baseline;gap:6px"><span class="display" style="font-size:46px" id="plan-price">—</span><span style="font-size:13px;color:var(--text-muted)" id="plan-per"></span></div>
+        <a class="btn btn--primary btn--block btn--hero" href="/seja-socio" style="margin-top:4px">Quero ser sócio</a>
+      </div>
+    </div>
+  </section>
+
+  <footer id="siteFooter"></footer>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/store.js"></script>
+<script>
+/* ---------- Banner do topo (fixo se 1, rotativo se +1) ---------- */
+let bnTimer = null;
+function setupBanner(banners) {
+  const rail = document.getElementById('bannerRail'), dots = document.getElementById('bannerDots');
+  clearInterval(bnTimer);
+  if (!banners.length) {
+    rail.innerHTML = `<div class="ph-slot"><div class="ph-slot__in"><i class="ph ph-image"></i><strong>Banner da atlética</strong><span class="dim">Tamanho recomendado <b>1600 × 400 px</b> (4:1)</span><span class="dim">Envie no painel · Site → Banners</span></div></div>`;
+    dots.innerHTML = '';
+    return;
+  }
+  rail.innerHTML = banners.map((b, i) => {
+    const cls = `banner-slide${i === 0 ? ' on' : ''}`, bg = `background-image:url(${b.url})`;
+    return b.link
+      ? `<a class="${cls}" data-i="${i}" href="${AH.escape(b.link)}" target="_blank" rel="noopener" style="${bg}"></a>`
+      : `<div class="${cls}" data-i="${i}" style="${bg}"></div>`;
+  }).join('');
+  const slides = [...rail.querySelectorAll('.banner-slide')];
+  if (banners.length < 2) { dots.innerHTML = ''; return; }
+  dots.innerHTML = banners.map((_, i) => `<button class="banner-dot${i === 0 ? ' on' : ''}" data-i="${i}" aria-label="Banner ${i + 1}"></button>`).join('');
+  const dotEls = [...dots.querySelectorAll('.banner-dot')];
+  let bi = 0;
+  const go = n => { bi = (n + banners.length) % banners.length; slides.forEach((s, i) => s.classList.toggle('on', i === bi)); dotEls.forEach((d, i) => d.classList.toggle('on', i === bi)); };
+  const restart = () => { clearInterval(bnTimer); bnTimer = setInterval(() => go(bi + 1), 5000); };
+  dotEls.forEach(d => d.onclick = () => { go(+d.dataset.i); restart(); });
+  restart();
+}
+
+/* ---------- Parceiros (placeholder mostra o tamanho quando vazio) ---------- */
+function renderPartners(items) {
+  const t = document.getElementById('partners');
+  if (!items.length) {
+    t.style.animation = 'none'; t.style.width = '100%'; t.style.justifyContent = 'center'; t.style.flexWrap = 'wrap';
+    t.innerHTML = Array.from({ length: 4 }).map((_, i) =>
+      `<div class="slide slide--ph"><div class="ph-slot"><div class="ph-slot__in"><i class="ph ph-buildings"></i><strong>Parceiro ${i + 1}</strong><span class="dim">Logo <b>400 × 200 px</b></span></div></div></div>`).join('');
+    return;
+  }
+  t.style.animation = ''; t.style.width = ''; t.style.justifyContent = ''; t.style.flexWrap = '';
+  const html = items.map(c => `<div class="slide" style="background-image:url(${c.url})">${c.title ? `<span class="cap">${AH.escape(c.title)}</span>` : ''}${c.link ? `<a class="full" href="${AH.escape(c.link)}" target="_blank" rel="noopener"></a>` : ''}</div>`).join('');
+  t.innerHTML = html + html;
+  t.style.setProperty('--dur', Math.max(18, items.length * 7) + 's');
+}
+
+/* ---------- Galeria em destaque (1 grande + 2 menores + thumbs) ---------- */
+let galTimer = null;
+function setupGallery(items) {
+  const n = items.length;
+  const main = document.getElementById('galMain'), s1 = document.getElementById('galSide1'), s2 = document.getElementById('galSide2'), thumbs = document.getElementById('galThumbs');
+  const feat = main.parentElement; let gi = 0;
+  const paint = (el, it) => { if (!it) { el.style.display = 'none'; return; } el.style.display = ''; el.style.backgroundImage = `url(${it.url})`; el.innerHTML = it.cap ? `<span class="gal-cap">${AH.escape(it.cap)}</span>` : ''; };
+  function render() {
+    paint(main, items[gi]); paint(s1, n >= 2 ? items[(gi + 1) % n] : null); paint(s2, n >= 3 ? items[(gi + 2) % n] : null);
+    feat.style.gridTemplateColumns = n >= 2 ? '1.5fr 1fr' : '1fr';
+    const active = new Set([gi, (gi + 1) % n, (gi + 2) % n].slice(0, Math.min(3, n)));
+    thumbs.innerHTML = items.map((it, i) => `<div class="gal-thumb ${active.has(i) ? 'on' : ''}" data-i="${i}" style="background-image:url(${it.url})"></div>`).join('');
+    thumbs.querySelectorAll('.gal-thumb').forEach(t => t.onclick = () => { gi = +t.dataset.i; render(); restart(); });
+  }
+  function restart() { clearInterval(galTimer); if (n > 3) galTimer = setInterval(() => { gi = (gi + 3) % n; render(); }, 5000); }
+  render(); restart();
+}
+
+function renderHomepage(hp) {
+  const F = k => AH.fileUrl(k);
+  // Banner: usa o array novo; cai pro campo antigo se existir
+  let banners = (hp.banners || []).filter(b => b.imageKey).map(b => ({ url: F(b.imageKey), link: b.link }));
+  if (!banners.length && hp.bannerKey) banners = [{ url: F(hp.bannerKey), link: hp.bannerLink }];
+  setupBanner(banners);
+  // Parceiros
+  renderPartners((hp.carousel || []).filter(c => c.imageKey).map(c => ({ url: F(c.imageKey), title: c.title, link: c.link })));
+  // Diretoria
+  if (hp.board && hp.board.length) {
+    const html = hp.board.map(b => `<div class="board-card"><div class="board-photo" style="${b.photoKey ? `background-image:url(${F(b.photoKey)})` : ''}">${b.photoKey ? '' : AH.initials(b.name)}</div><strong style="font-size:13.5px">${AH.escape(b.name)}</strong><span class="dim" style="font-size:11.5px">${AH.escape(b.role || '')}</span></div>`).join('');
+    const t = document.getElementById('board'); t.innerHTML = html + html; t.style.setProperty('--dur', Math.max(18, hp.board.length * 7) + 's');
+    document.getElementById('boardSection').style.display = '';
+  }
+  // Galeria
+  if (hp.gallery && hp.gallery.length) { setupGallery(hp.gallery.map(g => ({ url: F(g.imageKey), cap: g.caption || '' }))); document.getElementById('gallerySection').style.display = ''; }
+}
+
+(async function () {
+  const d = await AH.store.init('inicio');
+  if (!d) { document.getElementById('products').innerHTML = '<div class="dim">Loja indisponível.</div>'; setupBanner([]); renderPartners([]); return; }
+  const ws = d.workspace;
+  if (ws.logoKey) document.querySelector('.hero-store__brasao').src = AH.fileUrl(ws.logoKey);
+  document.getElementById('heroEyebrow').textContent = [ws.university, 'Sistemas de Informação'].filter(Boolean).join(' · ');
+
+  // Próximo evento (teaser)
+  const ev = d.events[0], featHost = document.getElementById('featEvent');
+  if (ev && ev.batches && ev.batches.length) {
+    const b = ev.batches[0], dt = ev.eventDate ? new Date(ev.eventDate) : null;
+    featHost.innerHTML = `<div class="feature-event"><div class="feature-event__art">${AH.escape(ev.name)}</div><div class="grow stack gap-10"><div class="row gap-10"><span class="pill pill--accent">Vendendo</span><span style="font-size:12.5px;color:var(--text-muted)">${dt ? dt.toLocaleString('pt-BR') : ''} ${AH.escape(ev.location || '')}</span></div><h3 class="display" style="font-size:38px">${AH.escape(ev.name)}</h3><div class="row mla" style="margin-top:auto;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap"><div class="row gap-10"><div class="price-box"><span class="k">Fã</span><span class="v">${AH.fmtBRL(b.priceCents)}</span></div>${b.memberPriceCents ? `<div class="price-box price-box--socio"><span class="k">Sócio</span><span class="v">${AH.fmtBRL(b.memberPriceCents)}</span></div>` : ''}</div><button class="btn btn--primary btn--hero" onclick="AH.store.addItem('ticket','${b.id}','${AH.escape(ev.name + ' — ' + b.name).replace(/'/g,'&#39;')}',${b.priceCents})">Comprar ingresso</button></div></div></div>`;
+  } else { featHost.innerHTML = '<div class="feature-event"><div class="grow"><h3 class="display" style="font-size:28px">Nenhum evento à venda</h3><p class="dim">Fique de olho — em breve tem festa.</p></div></div>'; }
+
+  // Top 4 produtos
+  document.getElementById('products').innerHTML = d.products.length ? d.products.slice(0, 4).map(AH.store.productCard).join('') : '<div class="dim" style="grid-column:1/-1">Nenhum produto ainda.</div>';
+
+  // Vire sócio (teaser)
+  const plan = d.plans[0];
+  if (plan) { document.getElementById('plan-name').textContent = plan.name; document.getElementById('plan-price').textContent = AH.fmtBRL(plan.priceCents, { decimals: 0 }); document.getElementById('plan-per').textContent = plan.period === 'annual' ? '/ano' : '/semestre'; }
+  const benefits = (plan && plan.benefits && plan.benefits.length) ? plan.benefits : ['Ingresso mais barato', 'Desconto na loja', 'Carteirinha digital'];
+  document.getElementById('benefits').innerHTML = benefits.map(b => `<span class="benefit"><i class="ph-fill ph-check-circle" style="font-size:15px;color:var(--brand-bright)"></i>${AH.escape(b)}</span>`).join('');
+
+  renderHomepage(d.homepage || {});
+})();
+</script>
+</body>
+</html>

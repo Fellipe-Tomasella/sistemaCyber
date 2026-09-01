@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagamentos — AtléticaHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../vendor/phosphor/regular/style.css">
+<link rel="stylesheet" href="../vendor/phosphor/fill/style.css">
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/main.css">
+<style>
+  .toggle{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--text-soft);cursor:pointer}
+  .toggle input{width:18px;height:18px;accent-color:var(--brand)}
+  .prov{display:flex;gap:12px;flex-wrap:wrap}
+  .prov label{flex:1;min-width:140px;padding:14px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface-1);cursor:pointer;display:flex;flex-direction:column;gap:4px}
+  .prov label.sel{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,119,255,0.16)}
+  .prov input{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <div class="main">
+    <header class="hero"><div class="hero__row"><div class="stack gap-6"><span class="eyebrow">Recebimentos</span><h1>Pagamentos</h1></div>
+      <span class="pill" id="statusPill">—</span></div></header>
+    <div class="page-body" style="max-width:640px">
+      <div class="panel" style="display:flex;flex-direction:column;gap:18px">
+        <div class="stack gap-8">
+          <span class="label-cap">Gateway de pagamento</span>
+          <div class="prov" id="prov">
+            <label data-p=""><strong style="font-size:14px">Manual</strong><span class="dim" style="font-size:12px">Diretoria marca pago</span></label>
+            <label data-p="mock"><strong style="font-size:14px">Teste (mock)</strong><span class="dim" style="font-size:12px">Pix falso p/ testar</span></label>
+            <label data-p="mercadopago"><strong style="font-size:14px">Mercado Pago</strong><span class="dim" style="font-size:12px">Pix + cartão</span></label>
+          </div>
+        </div>
+
+        <div id="mpFields" class="stack gap-14" style="display:none">
+          <div class="ah-field"><label>Access Token <span id="tokState" class="dim" style="text-transform:none;letter-spacing:0"></span></label><input id="f-token" type="password" placeholder="APP_USR-... ou TEST-..."><span class="ah-hint">Do painel do Mercado Pago → Suas integrações → Credenciais. Guardado criptografado.</span></div>
+          <div class="ah-field"><label>Public Key</label><input id="f-pubkey" placeholder="APP_USR-... / TEST-..."><span class="ah-hint">Usada no checkout do cartão (frontend).</span></div>
+          <label class="toggle"><input type="checkbox" id="f-sandbox"> Ambiente de teste (sandbox)</label>
+        </div>
+
+        <div class="stack gap-10">
+          <span class="label-cap">Formas aceitas</span>
+          <label class="toggle"><input type="checkbox" id="f-pix"> Pix</label>
+          <label class="toggle"><input type="checkbox" id="f-card"> Cartão de crédito</label>
+        </div>
+
+        <div class="stack gap-10">
+          <span class="label-cap">Taxa do cartão</span>
+          <div class="ah-field"><label>Taxa (%)</label><input id="f-fee" type="number" step="0.01" style="max-width:140px"></div>
+          <label class="toggle"><input type="checkbox" id="f-feepass"> Repassar a taxa do cartão ao comprador</label>
+          <span class="dim" style="font-size:12px">Se ligado, o valor no cartão soma a taxa — a atlética recebe o valor cheio.</span>
+        </div>
+
+        <button class="btn btn--primary" id="saveBtn" style="align-self:flex-start"><i class="ph ph-check"></i>Salvar</button>
+      </div>
+
+      <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+        <strong class="panel__title">Como pegar as credenciais (Mercado Pago)</strong>
+        <ol class="dim" style="font-size:13px;margin:0;padding-left:18px;line-height:1.7">
+          <li>Crie a conta em <b>mercadopago.com.br</b> (pode ser PF).</li>
+          <li>Acesse <b>Suas integrações → Criar aplicação</b>.</li>
+          <li>Em <b>Credenciais de teste</b>, copie o <b>Access Token</b> e a <b>Public Key</b> e cole aqui (deixe o sandbox ligado).</li>
+          <li>Teste com os cartões de teste do MP. Funcionou? Troque pelas <b>Credenciais de produção</b> e desligue o sandbox.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../js/api.js"></script><script src="../js/layout.js"></script>
+<script>
+let PROVIDER='';
+async function init(){
+  AH.renderRail('config');
+  let c; try{ c=await AH.api.get('/payment-settings'); }catch(e){ AH.toast(e.message,'err'); return; }
+  PROVIDER=c.provider||'';
+  selProv(PROVIDER);
+  document.getElementById('tokState').textContent = c.hasToken?'✓ já salvo (deixe vazio pra manter)':'';
+  document.getElementById('f-pubkey').value=c.publicKey||'';
+  document.getElementById('f-sandbox').checked=c.sandbox;
+  document.getElementById('f-pix').checked=c.pixEnabled;
+  document.getElementById('f-card').checked=c.cardEnabled;
+  document.getElementById('f-fee').value=(c.cardFeeBp/100).toFixed(2);
+  document.getElementById('f-feepass').checked=c.cardFeePass;
+  updateStatus(c);
+  document.querySelectorAll('#prov label').forEach(l=>l.onclick=()=>selProv(l.dataset.p));
+  document.getElementById('saveBtn').onclick=save;
+}
+function selProv(p){
+  PROVIDER=p;
+  document.querySelectorAll('#prov label').forEach(l=>l.classList.toggle('sel',l.dataset.p===p));
+  document.getElementById('mpFields').style.display = p==='mercadopago'?'flex':'none';
+}
+function updateStatus(c){
+  const pill=document.getElementById('statusPill');
+  if(!c.provider){ pill.className='pill pill--neutral'; pill.textContent='Manual'; }
+  else if(c.provider==='mock'){ pill.className='pill pill--warn'; pill.textContent='Teste (mock)'; }
+  else { pill.className='pill '+(c.sandbox?'pill--warn':'pill--success'); pill.textContent='Mercado Pago'+(c.sandbox?' · sandbox':' · produção'); }
+}
+async function save(){
+  const btn=document.getElementById('saveBtn'); btn.disabled=true;
+  const body={
+    provider:PROVIDER,
+    publicKey:document.getElementById('f-pubkey').value.trim(),
+    sandbox:document.getElementById('f-sandbox').checked,
+    pixEnabled:document.getElementById('f-pix').checked,
+    cardEnabled:document.getElementById('f-card').checked,
+    cardFeeBp:Math.round(parseFloat(document.getElementById('f-fee').value||'0')*100),
+    cardFeePass:document.getElementById('f-feepass').checked,
+  };
+  const tok=document.getElementById('f-token').value.trim();
+  if(tok) body.accessToken=tok;
+  try{ await AH.api.patch('/payment-settings',body); AH.toast('Configuração salva ✅'); init(); document.getElementById('f-token').value=''; }
+  catch(e){ AH.toast(e.message,'err'); }
+  btn.disabled=false;
+}
+if(AH.guard('director') && AH.guardModule('financeiro')) init();
+</script>
+</body>
+</html>
