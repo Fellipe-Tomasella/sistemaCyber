@@ -8,24 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Owner em minúsculo (GHCR exige minúsculo)
-        id: owner
-        run: echo "lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-
       - uses: docker/setup-buildx-action@v3
 
-      - name: Login no GHCR
+      - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build + push — backend
         uses: docker/build-push-action@v6
@@ -33,8 +25,8 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ghcr.io/${{ steps.owner.outputs.lc }}/atletica-backend:latest
-            ghcr.io/${{ steps.owner.outputs.lc }}/atletica-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/atletica-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/atletica-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -44,8 +36,8 @@ jobs:
           context: ./web
           push: true
           tags: |
-            ghcr.io/${{ steps.owner.outputs.lc }}/atletica-web:latest
-            ghcr.io/${{ steps.owner.outputs.lc }}/atletica-web:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/atletica-web:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/atletica-web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -63,4 +55,4 @@ jobs:
           if [ -z "$HOST" ]; then echo "VPS_HOST não configurado — pulando deploy automático. Faça o deploy manual (ver DEPLOY.md)."; exit 0; fi
           mkdir -p ~/.ssh && printf '%s' "$KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id "$USER@$HOST" \
-            'cd /opt/atletica && git pull --ff-only && set -a && . ./.env.prod && set +a && docker stack deploy -c docker-stack.yml atletica --with-registry-auth --resolve-image always'
+            'cd /opt/atletica && git pull --ff-only && set -a && . ./.env.prod && set +a && docker stack deploy -c docker-stack.yml atletica --resolve-image always'

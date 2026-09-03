@@ -90,7 +90,7 @@ services:
 
   # ---------- App ----------
   backend:
-    image: ${REGISTRY:-ghcr.io/OWNER}/atletica-backend:${TAG:-latest}
+    image: ${REGISTRY:-nacomberi}/atletica-backend:${TAG:-latest}
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -117,7 +117,7 @@ services:
       <<: *restart
 
   web:
-    image: ${REGISTRY:-ghcr.io/OWNER}/atletica-web:${TAG:-latest}
+    image: ${REGISTRY:-nacomberi}/atletica-web:${TAG:-latest}
     networks: [atletica_net]
     deploy:
       replicas: 1

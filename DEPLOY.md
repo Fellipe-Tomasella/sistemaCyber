@@ -1,6 +1,6 @@
 # Deploy — AtléticaHub (Docker Swarm + GHCR + Traefik)
 
-Fluxo: você faz **push no GitHub** → o **GitHub Actions** builda as imagens e publica no **GHCR** → a **VPS (Swarm)** puxa as imagens e sobe com **Traefik + HTTPS** automático.
+Fluxo: você faz **push no GitHub** → o **GitHub Actions** builda as imagens e publica no **Docker Hub** → a **VPS (Swarm)** puxa as imagens e sobe com **Traefik + HTTPS** automático.
 
 ---
 
@@ -16,10 +16,11 @@ git remote add origin https://github.com/OWNER/atletica.git   # crie o repo vazi
 git push -u origin main
 ```
 
-O push dispara o workflow `.github/workflows/deploy.yml`, que builda e publica:
-`ghcr.io/OWNER/atletica-backend:latest` e `ghcr.io/OWNER/atletica-web:latest`.
-> Em **Settings → Actions → General**, garanta "Read and write permissions" pro `GITHUB_TOKEN`.
-> Em **Packages** (no perfil), você pode deixar as 2 imagens **públicas** (mais simples) — ou manter privadas e logar no GHCR na VPS (passo 4).
+O push dispara o workflow `.github/workflows/deploy.yml`, que builda e publica no **Docker Hub**:
+`nacomberi/atletica-backend:latest` e `nacomberi/atletica-web:latest`.
+> Em **Settings → Secrets and variables → Actions**, crie os secrets `DOCKERHUB_USERNAME` (= `nacomberi`) e `DOCKERHUB_TOKEN` (Access Token gerado em hub.docker.com → Account Settings → Security).
+> Deixe os 2 repositórios de imagem **públicos** no Docker Hub (mais simples) — ou privados e logue na VPS (passo 4).
+> Obs: as imagens já foram publicadas manualmente uma vez, então a VPS já consegue puxar mesmo antes do 1º build do CI.
 
 ---
 
@@ -42,7 +43,7 @@ docker swarm init --advertise-addr SEU_IP
 mkdir -p /opt/atletica && cd /opt/atletica
 git clone https://github.com/OWNER/atletica.git .
 cp .env.prod.example .env.prod
-nano .env.prod    # preencha DOMÍNIO, REGISTRY=ghcr.io/OWNER, senhas e segredos
+nano .env.prod    # preencha DOMÍNIO, REGISTRY=nacomberi, senhas e segredos
 ```
 
 Gere os segredos (rode 1x cada e cole no `.env.prod`):
@@ -53,12 +54,12 @@ openssl rand -hex 32   # AES_ENCRYPTION_KEY (precisa ter 64 hex chars)
 
 ---
 
-## 4) (Se as imagens forem privadas) logar no GHCR na VPS
+## 4) (Só se as imagens forem PRIVADAS) logar no Docker Hub na VPS
 
 ```bash
-echo SEU_TOKEN_GITHUB | docker login ghcr.io -u OWNER --password-stdin
+echo SEU_TOKEN | docker login -u nacomberi --password-stdin
 ```
-> Token = PAT do GitHub com escopo `read:packages`.
+> Token = Access Token do Docker Hub. Se os repositórios forem públicos, **pule este passo**.
 
 ---
 
@@ -100,5 +101,5 @@ Sem esses secrets, o deploy é manual: repita o passo 5 (`git pull` + `docker st
 
 ## Manutenção rápida
 - Ver logs:        `docker service logs -f atletica_backend`
-- Redeploy 1 svc:  `docker service update --image ghcr.io/OWNER/atletica-backend:latest atletica_backend --with-registry-auth`
+- Redeploy 1 svc:  `docker service update --image nacomberi/atletica-backend:latest atletica_backend`
 - Backup do banco: `docker exec $(docker ps -qf name=atletica_postgres) pg_dump -U atletica atletica_hub > backup.sql`
