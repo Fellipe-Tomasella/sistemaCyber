@@ -41,18 +41,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Deploy automático na VPS — só roda se você setar os secrets VPS_HOST/VPS_USER/VPS_SSH_KEY
-  deploy:
+  # Redeploy automático — dispara o webhook da stack no Portainer (se configurado)
+  redeploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Redeploy no Swarm via SSH
+      - name: Webhook do Portainer
         env:
-          HOST: ${{ secrets.VPS_HOST }}
-          USER: ${{ secrets.VPS_USER }}
-          KEY: ${{ secrets.VPS_SSH_KEY }}
+          HOOK: ${{ secrets.PORTAINER_WEBHOOK }}
         run: |
-          if [ -z "$HOST" ]; then echo "VPS_HOST não configurado — pulando deploy automático. Faça o deploy manual (ver DEPLOY.md)."; exit 0; fi
-          mkdir -p ~/.ssh && printf '%s' "$KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id "$USER@$HOST" \
-            'cd /opt/atletica && git pull --ff-only && set -a && . ./.env.prod && set +a && docker stack deploy -c docker-stack.yml atletica --resolve-image always'
+          if [ -z "$HOOK" ]; then echo "PORTAINER_WEBHOOK não setado — atualize a stack manualmente no Portainer (Pull and redeploy)."; exit 0; fi
+          curl -fsSL -X POST "$HOOK" && echo "Redeploy disparado no Portainer."

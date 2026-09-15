@@ -3,14 +3,15 @@ node_modules/
 **/node_modules/
 .bun/
 
-# Segredos / ambiente  (NUNCA commitar)
+# Segredos / ambiente — ignora os .env reais em qualquer pasta; versiona só os *.example
 .env
 .env.*
-!.env.example
-!.env.prod.example
 **/.env
 **/.env.*
+!.env.example
 !**/.env.example
+!.env.prod.example
+!**/.env.prod.example
 
 # Build / artefatos
 dist/

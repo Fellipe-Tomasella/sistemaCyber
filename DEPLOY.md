@@ -1,105 +1,69 @@
-# Deploy — AtléticaHub (Docker Swarm + GHCR + Traefik)
+# Deploy — AtléticaHub (Portainer + Docker Swarm)
 
-Fluxo: você faz **push no GitHub** → o **GitHub Actions** builda as imagens e publica no **Docker Hub** → a **VPS (Swarm)** puxa as imagens e sobe com **Traefik + HTTPS** automático.
+Fluxo: **push no GitHub** → GitHub Actions builda e publica no **Docker Hub** (`nacomberi/atletica-*`) → no **Portainer** você cola o `docker-stack.yml`, preenche as variáveis e sobe a stack. O HTTPS é do **Traefik que já roda na sua VPS** (rede `HDSwarmNet`, resolver `letsencryptresolver`).
 
----
-
-## 1) Conectar ao GitHub (na sua máquina)
-
-```bash
-cd C:\atletica
-git init
-git add .
-git commit -m "AtléticaHub — deploy inicial"
-git branch -M main
-git remote add origin https://github.com/OWNER/atletica.git   # crie o repo vazio antes
-git push -u origin main
-```
-
-O push dispara o workflow `.github/workflows/deploy.yml`, que builda e publica no **Docker Hub**:
-`nacomberi/atletica-backend:latest` e `nacomberi/atletica-web:latest`.
-> Em **Settings → Secrets and variables → Actions**, crie os secrets `DOCKERHUB_USERNAME` (= `nacomberi`) e `DOCKERHUB_TOKEN` (Access Token gerado em hub.docker.com → Account Settings → Security).
-> Deixe os 2 repositórios de imagem **públicos** no Docker Hub (mais simples) — ou privados e logue na VPS (passo 4).
-> Obs: as imagens já foram publicadas manualmente uma vez, então a VPS já consegue puxar mesmo antes do 1º build do CI.
+> As imagens já foram publicadas 1x na mão, então dá pra subir a stack **agora**, mesmo antes do 1º build do CI.
 
 ---
 
-## 2) Provisionar a VPS (Hetzner)
-
-1. Crie um servidor **Ubuntu 24.04** (CX22 já roda de boa — 2 vCPU / 4 GB).
-2. Aponte no seu DNS um **registro A**: `atletica.seudominio.com.br → IP_DA_VPS` (o Traefik precisa disso pro certificado).
-3. Acesse por SSH e instale o Docker + inicie o Swarm:
-
-```bash
-curl -fsSL https://get.docker.com | sh
-docker swarm init --advertise-addr SEU_IP
-```
+## 1) DNS
+No seu provedor de DNS, crie um **registro A**: `atletica.seudominio.com.br → IP_DA_VPS`.
+(É o que o Traefik usa pra emitir o certificado HTTPS.)
 
 ---
 
-## 3) Levar os arquivos de deploy pra VPS
+## 2) (opcional) CI — build automático a cada push
+Já feito: `.github/workflows/deploy.yml` builda backend+web e publica no Docker Hub.
+Pra ligar, crie 2 secrets no repo (**Settings → Secrets and variables → Actions**):
+- `DOCKERHUB_USERNAME` = `nacomberi`
+- `DOCKERHUB_TOKEN` = Access Token (hub.docker.com → Account Settings → Security)
 
-```bash
-mkdir -p /opt/atletica && cd /opt/atletica
-git clone https://github.com/OWNER/atletica.git .
-cp .env.prod.example .env.prod
-nano .env.prod    # preencha DOMÍNIO, REGISTRY=nacomberi, senhas e segredos
-```
-
-Gere os segredos (rode 1x cada e cole no `.env.prod`):
-```bash
-openssl rand -hex 32   # JWT_SECRET, JWT_REFRESH_SECRET, DOCUMENT_HASH_PEPPER
-openssl rand -hex 32   # AES_ENCRYPTION_KEY (precisa ter 64 hex chars)
-```
+Deixe os repositórios de imagem **públicos** no Docker Hub (mais simples). Se forem privados, adicione o registry do Docker Hub no Portainer (**Registries**).
 
 ---
 
-## 4) (Só se as imagens forem PRIVADAS) logar no Docker Hub na VPS
+## 3) Subir a stack no Portainer
 
-```bash
-echo SEU_TOKEN | docker login -u nacomberi --password-stdin
-```
-> Token = Access Token do Docker Hub. Se os repositórios forem públicos, **pule este passo**.
+1. **Portainer → Stacks → Add stack** → nome `atletica` → **Web editor**.
+2. Cole o conteúdo do **`docker-stack.yml`**.
+3. Em **Environment variables → Add an environment variable**, adicione (valores em `.env.prod.example`):
+
+| Variável | Valor |
+|---|---|
+| `DOMAIN` | atletica.seudominio.com.br |
+| `POSTGRES_PASSWORD` | senha forte (sem `@ : /`) |
+| `MINIO_PASSWORD` | senha forte |
+| `JWT_SECRET` | `openssl rand -hex 32` |
+| `JWT_REFRESH_SECRET` | `openssl rand -hex 32` |
+| `AES_ENCRYPTION_KEY` | `openssl rand -hex 32` (64 chars) |
+| `DOCUMENT_HASH_PEPPER` | `openssl rand -hex 32` |
+| `SMTP_HOST` | smtp.gmail.com |
+| `SMTP_PORT` | 465 |
+| `SMTP_USER` | cyberatletica@gmail.com |
+| `SMTP_PASS` | senha de app do Gmail |
+| `SMTP_FROM` | `A.A.A.S.I. Cyber <cyberatletica@gmail.com>` |
+
+4. **Deploy the stack**. Acompanhe até os serviços ficarem `1/1` (o `createbuckets` fica `0/1` = normal, ele roda e sai).
+
+> O **backend cria/atualiza as tabelas sozinho** no start (`db:push`), então **não precisa** rodar migração na mão.
 
 ---
 
-## 5) Subir a stack
+## 4) Criar sua atlética (uma vez)
+Depois que a stack subir e o HTTPS pegar, acesse **https://atletica.seudominio.com.br** e crie a atlética pelo onboarding — ou por 1 comando:
 
-```bash
-cd /opt/atletica
-set -a; source .env.prod; set +a
-docker stack deploy -c docker-stack.yml atletica --with-registry-auth --resolve-image always
-docker stack services atletica       # acompanhe até tudo com 1/1
-```
-
-### Primeira vez: criar o schema no banco
-```bash
-BE=$(docker ps --filter name=atletica_backend -q | head -1)
-docker exec $BE bun run db:push          # cria as tabelas
-```
-Depois crie sua atlética real pelo onboarding (uma vez):
 ```bash
 curl -s -X POST https://atletica.seudominio.com.br/api/v1/auth/register-atletica \
   -H "Content-Type: application/json" \
   -d '{"name":"A.A.A.S.I. Cyber","slug":"cyber","university":"UNEMAT Sinop","adminName":"SEU NOME","adminEmail":"presidente@suaatletica.com","adminPassword":"UMA_SENHA_FORTE"}'
 ```
-> Pra tornar um e-mail super-admin (gestão de usuários), defina o `official_email` da atlética (via SQL no `atletica_workspaces` ou criando a conta com esse e-mail).
-
-Acesse **https://atletica.seudominio.com.br** — o Traefik emite o certificado no primeiro acesso.
+> Super-admin (gestão de usuários/cargos): defina o `official_email` da atlética e crie a conta com esse e-mail.
 
 ---
 
-## 6) Deploy contínuo (opcional, automático)
+## 5) Atualizar (deploy novo)
+- Buildou imagem nova (push no git com os secrets, ou `docker build/push` na mão) → no Portainer, na stack, **Pull and redeploy** (ou **Update the stack**). O Swarm puxa a `:latest` e recria os serviços.
 
-Nos **Secrets do repositório** (Settings → Secrets → Actions) adicione:
-`VPS_HOST` (IP), `VPS_USER` (ex.: root), `VPS_SSH_KEY` (chave privada com acesso à VPS).
-
-A partir daí, todo `git push` na `main` builda **e** redeploya sozinho (job `deploy`).
-Sem esses secrets, o deploy é manual: repita o passo 5 (`git pull` + `docker stack deploy`).
-
----
-
-## Manutenção rápida
-- Ver logs:        `docker service logs -f atletica_backend`
-- Redeploy 1 svc:  `docker service update --image nacomberi/atletica-backend:latest atletica_backend`
+## Manutenção
+- Logs: no Portainer, no serviço `atletica_backend` → **Logs**.
 - Backup do banco: `docker exec $(docker ps -qf name=atletica_postgres) pg_dump -U atletica atletica_hub > backup.sql`

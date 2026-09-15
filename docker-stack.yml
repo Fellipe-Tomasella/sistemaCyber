@@ -1,65 +1,36 @@
 # ============================================================
-# AtléticaHub — stack de PRODUÇÃO (Docker Swarm)
-# Deploy:  docker stack deploy -c docker-stack.yml atletica
-# Antes:   carregue os segredos ->  set -a; source .env.prod; set +a
-# Imagens: buildadas no GitHub Actions e publicadas no GHCR (ver .github/workflows).
+# AtléticaHub — stack de PRODUÇÃO (Docker Swarm / Portainer)
+# Proxy/HTTPS: usa o Traefik EXTERNO já existente (rede HDSwarmNet + certresolver letsencryptresolver).
+# Cole no Portainer (Stacks → Add stack) e preencha as variáveis de ambiente (ver .env.prod.example).
+# O backend roda o db:push sozinho no start (cria/atualiza as tabelas).
 # ============================================================
-version: "3.9"
-
-x-restart: &restart
-  restart_policy: { condition: any, delay: 5s }
+version: "3.8"
 
 services:
-  # ---------- Proxy + HTTPS (Let's Encrypt) ----------
-  traefik:
-    image: traefik:v3.1
-    command:
-      - --providers.swarm=true
-      - --providers.swarm.exposedByDefault=false
-      - --providers.swarm.network=atletica_net
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
-      - --certificatesresolvers.le.acme.tlschallenge=true
-      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
-    ports:
-      - target: 80
-        published: 80
-        mode: host
-      - target: 443
-        published: 443
-        mode: host
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_acme:/letsencrypt
-    networks: [atletica_net]
-    deploy:
-      placement: { constraints: [node.role == manager] }
-      <<: *restart
-
-  # ---------- Banco / cache / storage ----------
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: atletica
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: atletica_hub
-    volumes: [pg_data:/var/lib/postgresql/data]
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     networks: [atletica_net]
     deploy:
+      replicas: 1
       placement: { constraints: [node.role == manager] }
-      <<: *restart
+      restart_policy: { condition: any }
 
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
-    volumes: [redis_data:/data]
+    volumes:
+      - redis_data:/data
     networks: [atletica_net]
     deploy:
+      replicas: 1
       placement: { constraints: [node.role == manager] }
-      <<: *restart
+      restart_policy: { condition: any }
 
   minio:
     image: minio/minio:latest
@@ -67,30 +38,30 @@ services:
     environment:
       MINIO_ROOT_USER: atletica
       MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
-    volumes: [minio_data:/data]
+    volumes:
+      - minio_data:/data
     networks: [atletica_net]
     deploy:
+      replicas: 1
       placement: { constraints: [node.role == manager] }
-      <<: *restart
+      restart_policy: { condition: any }
 
   createbuckets:
     image: minio/mc
     entrypoint: >
-      /bin/sh -c "
-      until (/usr/bin/mc alias set local http://minio:9000 atletica $${MINIO_PASSWORD}) do echo aguardando minio; sleep 2; done;
-      /usr/bin/mc mb -p local/atletica-hub || true;
-      /usr/bin/mc anonymous set none local/atletica-hub || true;
-      exit 0;"
+      /bin/sh -c "until (/usr/bin/mc alias set local http://minio:9000 atletica $${MINIO_PASSWORD}); do echo aguardando-minio; sleep 2; done;
+      /usr/bin/mc mb -p local/atletica-hub || true; exit 0;"
     environment:
       MINIO_PASSWORD: ${MINIO_PASSWORD}
     networks: [atletica_net]
     deploy:
+      replicas: 1
       restart_policy: { condition: none }
-      placement: { constraints: [node.role == manager] }
 
-  # ---------- App ----------
   backend:
-    image: ${REGISTRY:-nacomberi}/atletica-backend:${TAG:-latest}
+    image: nacomberi/atletica-backend:latest
+    # espera o banco, cria/atualiza o schema, sobe a API
+    command: ["sh", "-c", "for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do bun run db:push && break; echo aguardando-banco; sleep 3; done; exec bun src/index.ts"]
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -105,37 +76,41 @@ services:
       AES_ENCRYPTION_KEY: ${AES_ENCRYPTION_KEY}
       DOCUMENT_HASH_PEPPER: ${DOCUMENT_HASH_PEPPER}
       CORS_ORIGIN: https://${DOMAIN}
-      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
-      SMTP_PORT: ${SMTP_PORT:-465}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-      SMTP_FROM: ${SMTP_FROM:-}
       APP_URL: https://${DOMAIN}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
     networks: [atletica_net]
     deploy:
       replicas: 1
-      <<: *restart
+      restart_policy: { condition: any }
 
   web:
-    image: ${REGISTRY:-nacomberi}/atletica-web:${TAG:-latest}
-    networks: [atletica_net]
+    image: nacomberi/atletica-web:latest
+    networks:
+      - atletica_net     # fala com o backend (nginx faz proxy /api -> backend:3000)
+      - HDSwarmNet        # exposto pelo seu Traefik
     deploy:
       replicas: 1
-      <<: *restart
+      restart_policy: { condition: any }
       labels:
-        - traefik.enable=true
-        - traefik.http.routers.web.rule=Host(`${DOMAIN}`)
-        - traefik.http.routers.web.entrypoints=websecure
-        - traefik.http.routers.web.tls.certresolver=le
-        - traefik.http.services.web.loadbalancer.server.port=80
+        - "traefik.enable=true"
+        - "traefik.http.routers.atletica.rule=Host(`${DOMAIN}`)"
+        - "traefik.http.routers.atletica.entrypoints=websecure"
+        - "traefik.http.routers.atletica.tls=true"
+        - "traefik.http.routers.atletica.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.atletica.loadbalancer.server.port=80"
+        - "traefik.docker.network=HDSwarmNet"
+
+volumes:
+  pg_data: { driver: local }
+  redis_data: { driver: local }
+  minio_data: { driver: local }
 
 networks:
   atletica_net:
-    driver: overlay
-    attachable: true
-
-volumes:
-  pg_data:
-  redis_data:
-  minio_data:
-  traefik_acme:
+  HDSwarmNet:
+    external: true
+    name: HDSwarmNet
