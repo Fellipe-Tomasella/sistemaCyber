@@ -13,6 +13,9 @@ node_modules/
 !.env.prod.example
 !**/.env.prod.example
 
+# Stack de produção PREENCHIDO (com segredos) — cole no Portainer, NUNCA commite
+docker-stack.prod.yml
+
 # Build / artefatos
 dist/
 build/
