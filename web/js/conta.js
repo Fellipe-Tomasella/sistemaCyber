@@ -1,5 +1,5 @@
 /* ============================================================
-   AtléticaHub — Área do usuário ("Minha conta")
+   hyperatlética — Área do usuário ("Minha conta")
    Shell responsivo (topo + bottom-nav) + fluxo de PIN da diretoria.
    Cada página chama: AH.conta.init('home'|'carteirinha'|'pagamentos')
    ============================================================ */

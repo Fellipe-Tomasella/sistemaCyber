@@ -1,5 +1,5 @@
 /* ============================================================
-   AtléticaHub — layout compartilhado (rail da diretoria)
+   hyperatlética — layout compartilhado (rail da diretoria)
    Uso: <nav class="rail" id="rail"></nav> + AH.renderRail('dashboard')
    ============================================================ */
 window.AH = window.AH || {};
@@ -33,7 +33,7 @@ AH.renderRail = function (active) {
   if (!el) return;
   const sess = (AH.session && AH.session.workspace) || null;
   const user = (AH.session && AH.session.user) || null;
-  const name = (sess && sess.name) || 'AtléticaHub';
+  const name = (sess && sess.name) || 'hyperatlética';
   const initials = user ? AH.initials(user.name) : 'AH';
   const cargo = user ? (user.cargoLabel || user.role || '') : '';
 

@@ -20,7 +20,7 @@ function transporter() {
   return _tx;
 }
 export const mailEnabled = () => !!(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS);
-const FROM = () => env.SMTP_FROM || (env.SMTP_USER ? `AtléticaHub <${env.SMTP_USER}>` : "AtléticaHub <no-reply@atleticahub.app>");
+const FROM = () => env.SMTP_FROM || (env.SMTP_USER ? `A.A.A.S.I. Cyber <${env.SMTP_USER}>` : "A.A.A.S.I. Cyber <no-reply@cyber.hyperdynamis.com>");
 
 /** Código numérico de 6 dígitos (verificação / recuperação). */
 export const genCode = () => String(randomInt(100000, 1000000));
@@ -55,7 +55,7 @@ function layout(brand: string, heading: string, body: string) {
         <h1 style="color:#ffffff;font-size:22px;margin:0 0 14px">${esc(heading)}</h1>
         ${body}
       </div>
-      <div style="padding:16px 28px;border-top:1px solid #1b2740;color:#5a6b80;font-size:12px">Enviado por ${esc(brand)} · feito com AtléticaHub</div>
+      <div style="padding:16px 28px;border-top:1px solid #1b2740;color:#5a6b80;font-size:12px">Enviado por ${esc(brand)} · feito com hyperatlética</div>
     </div>
   </div>`;
 }

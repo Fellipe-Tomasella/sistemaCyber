@@ -37,7 +37,7 @@ const app = new Elysia()
     set.status = 500;
     return fail("Erro interno", "internal");
   })
-  .get("/health", () => ok({ status: "up", service: "atleticahub", ts: Date.now() }))
+  .get("/health", () => ok({ status: "up", service: "hyperatletica", ts: Date.now() }))
   .group("/api/v1", (app) =>
     app
       .use(authRoutes)
@@ -66,6 +66,6 @@ const app = new Elysia()
   )
   .listen(env.PORT);
 
-console.log(`🏆 AtléticaHub API em http://localhost:${env.PORT}  (env: ${env.NODE_ENV})`);
+console.log(`🏆 hyperatlética API em http://localhost:${env.PORT}  (env: ${env.NODE_ENV})`);
 
 export type App = typeof app;

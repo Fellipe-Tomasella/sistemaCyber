@@ -33,8 +33,9 @@ services:
       restart_policy: { condition: any }
 
   minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
+    # quay.io = mirror oficial da MinIO (evita o limite de pull anônimo do Docker Hub)
+    image: quay.io/minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
     environment:
       MINIO_ROOT_USER: atletica
       MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
@@ -47,7 +48,7 @@ services:
       restart_policy: { condition: any }
 
   createbuckets:
-    image: minio/mc
+    image: quay.io/minio/mc:latest
     entrypoint: >
       /bin/sh -c "until (/usr/bin/mc alias set local http://minio:9000 atletica $${MINIO_PASSWORD}); do echo aguardando-minio; sleep 2; done;
       /usr/bin/mc mb -p local/atletica-hub || true; exit 0;"
@@ -58,7 +59,7 @@ services:
       replicas: 1
       restart_policy: { condition: none }
 
-  backend:
+  atletica-backend:
     image: nacomberi/atletica-backend:latest
     # espera o banco, cria/atualiza o schema, sobe a API
     command: ["sh", "-c", "for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do bun run db:push && break; echo aguardando-banco; sleep 3; done; exec bun src/index.ts"]
@@ -77,6 +78,7 @@ services:
       DOCUMENT_HASH_PEPPER: ${DOCUMENT_HASH_PEPPER}
       CORS_ORIGIN: https://${DOMAIN}
       APP_URL: https://${DOMAIN}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USER: ${SMTP_USER}
@@ -97,11 +99,11 @@ services:
       restart_policy: { condition: any }
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.atletica.rule=Host(`${DOMAIN}`)"
-        - "traefik.http.routers.atletica.entrypoints=websecure"
-        - "traefik.http.routers.atletica.tls=true"
-        - "traefik.http.routers.atletica.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.atletica.loadbalancer.server.port=80"
+        - "traefik.http.routers.cyber.rule=Host(`${DOMAIN}`)"
+        - "traefik.http.routers.cyber.entrypoints=websecure"
+        - "traefik.http.routers.cyber.tls=true"
+        - "traefik.http.routers.cyber.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.cyber.loadbalancer.server.port=80"
         - "traefik.docker.network=HDSwarmNet"
 
 volumes:

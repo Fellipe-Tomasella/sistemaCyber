@@ -1,5 +1,5 @@
 /**
- * AtléticaHub — Schema (Drizzle / PostgreSQL)
+ * hyperatlética — Schema (Drizzle / PostgreSQL)
  * Multi-tenant: workspace_id (atletica) NOT NULL em toda tabela de dados.
  * Valores monetários em CENTAVOS (bigint).
  * Documentos (CPF/CNPJ) SEMPRE hash argon2id + coluna _lookup (HMAC) para WHERE.

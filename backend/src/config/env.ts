@@ -41,6 +41,9 @@ const schema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),   // ex.: "A.A.A.S.I. Cyber <cyberatletica@gmail.com>"
   APP_URL: z.string().optional(),     // base do site, p/ links (ex.: http://localhost:4599)
+
+  // Login com Google (Firebase) — só o projectId (público) é preciso p/ validar o token
+  FIREBASE_PROJECT_ID: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

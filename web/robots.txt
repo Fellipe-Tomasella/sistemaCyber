@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /atletica/
+Disallow: /socio/
+Disallow: /entrar
+Disallow: /verificar
+Disallow: /recuperar
+Disallow: /gestao
+
+Sitemap: https://cyber.hyperdynamis.com/sitemap.xml

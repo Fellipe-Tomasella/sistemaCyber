@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { ok } from "../utils/response.ts";
-import { loginDirector, loginMember, rotateRefresh, revokeRefresh, registerAtletica, registerMember, registerAccount, loginAccount, unlockDirector, setDirectorPin, verifyEmail, resendVerification, forgotPassword, resetPassword } from "../services/auth.service.ts";
+import { loginDirector, loginMember, rotateRefresh, revokeRefresh, registerAtletica, registerMember, registerAccount, loginAccount, loginWithGoogle, unlockDirector, setDirectorPin, verifyEmail, resendVerification, forgotPassword, resetPassword } from "../services/auth.service.ts";
 import { onlyDigits, isValidCPF } from "../utils/validators.ts";
 import { Errors } from "../utils/response.ts";
 import { rateLimit, ipOf } from "../middlewares/rate-limit.ts";
@@ -17,6 +17,16 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     return ok(await registerAccount(body, ctx), "Conta criada");
   }, {
     body: t.Object({ slug: t.String(), name: t.String(), email: t.String(), password: t.String(), phone: t.Optional(t.String()) }),
+  })
+
+  // ── Login/cadastro com Google (Firebase) ──
+  .post("/google", async ({ body, headers, server, request }) => {
+    const ip = ipOf(server, request);
+    await rateLimit(`login:${ip}`, 20, 60);
+    const ctx = { userAgent: headers["user-agent"], ip };
+    return ok(await loginWithGoogle(body.idToken, body.slug, ctx), "Entrou com o Google");
+  }, {
+    body: t.Object({ idToken: t.String(), slug: t.String() }),
   })
 
   .post("/login", async ({ body, headers, server, request }) => {
@@ -111,7 +121,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     const ctx = { userAgent: headers["user-agent"], ip };
     return ok(await registerAtletica(body, ctx), "Atlética criada");
   }, {
-    body: t.Object({ name: t.String(), slug: t.String(), university: t.Optional(t.String()), adminName: t.String(), adminEmail: t.String(), adminPassword: t.String() }),
+    body: t.Object({ name: t.String(), slug: t.String(), university: t.Optional(t.String()), adminName: t.String(), adminEmail: t.String(), adminPassword: t.String(), officialEmail: t.Optional(t.String()) }),
   })
 
   // Auto-cadastro de sócio

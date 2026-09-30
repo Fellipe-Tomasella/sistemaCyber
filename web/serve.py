@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Servidor estático do AtléticaHub (dev).
+Servidor estático do hyperatlética (dev).
 - URLs limpas: /atletica/dashboard -> serve dashboard.html
 - /pasta -> /pasta/ (index.html)
 - 404 personalizado (404.html)
@@ -78,7 +78,7 @@ except OSError as e:
     sys.exit(1)
 
 with httpd:
-    print(f'AtléticaHub em http://localhost:{PORT}/  (Ctrl+C para parar)')
+    print(f'hyperatlética em http://localhost:{PORT}/  (Ctrl+C para parar)')
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

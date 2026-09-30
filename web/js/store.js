@@ -1,5 +1,5 @@
 /* ============================================================
-   AtléticaHub — motor da vitrine pública (home, loja, eventos, sócio)
+   hyperatlética — motor da vitrine pública (home, loja, eventos, sócio)
    Rotas: /  /loja  /eventos  /socio
    ============================================================ */
 window.AH = window.AH || {};
@@ -103,6 +103,15 @@ window.AH = window.AH || {};
     if (ws.primaryColor) root.style.setProperty('--brand', ws.primaryColor);
     if (ws.accentColor) root.style.setProperty('--brand-accent', ws.accentColor);
   }
+  // Normaliza WhatsApp: aceita link pronto OU número solto (vira https://wa.me/…)
+  function waHref(v) {
+    if (!v) return '';
+    v = String(v).trim();
+    if (/^https?:\/\//i.test(v)) return v;
+    const d = v.replace(/\D/g, '');
+    if (!d) return v;
+    return 'https://wa.me/' + (d.length <= 11 ? '55' + d : d);
+  }
 
   /* ---------------- Nav + rodapé (compartilhados) ---------------- */
   function renderNav(active) {
@@ -114,7 +123,7 @@ window.AH = window.AH || {};
       ? `<a class="btn" href="/socio/home"><i class="ph ph-user-circle" style="font-size:16px"></i> ${AH.escape(((acc && acc.name) || 'Conta').split(' ')[0])}</a><button class="btn btn--icon" id="logoutBtn" title="Sair"><i class="ph ph-sign-out"></i></button>`
       : `<a class="btn" href="/entrar?slug=${encodeURIComponent(slug)}">Entrar</a>`;
     document.getElementById('siteNav').innerHTML = `<nav class="store-nav">
-      <a class="row gap-10" href="/" style="color:var(--text);text-decoration:none"><div class="store-nav__logo"><img src="${logo}" alt=""></div><strong class="display" style="font-size:19px;letter-spacing:0.04em">${AH.escape(ws.name || 'AtléticaHub')}</strong></a>
+      <a class="row gap-10" href="/" style="color:var(--text);text-decoration:none"><div class="store-nav__logo"><img src="${logo}" alt=""></div><strong class="display" style="font-size:19px;letter-spacing:0.04em">${AH.escape(ws.name || 'A.A.A.S.I. Cyber')}</strong></a>
       <div class="store-nav__links">
         <a href="/" class="${active === 'inicio' ? 'is-active' : ''}">Início</a>
         <a href="/eventos" class="${active === 'eventos' ? 'is-active' : ''}">Eventos</a>
@@ -136,19 +145,19 @@ window.AH = window.AH || {};
     // redes sociais (ícones)
     const soc = [];
     if (c.instagram) soc.push(`<a href="${AH.escape(c.instagram)}" target="_blank" rel="noopener" title="Instagram"><i class="ph ph-instagram-logo"></i></a>`);
-    if (c.whatsapp) soc.push(`<a href="${AH.escape(c.whatsapp)}" target="_blank" rel="noopener" title="WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>`);
+    if (c.whatsapp) soc.push(`<a href="${AH.escape(waHref(c.whatsapp))}" target="_blank" rel="noopener" title="WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>`);
     if (c.email) soc.push(`<a href="mailto:${AH.escape(c.email)}" title="E-mail"><i class="ph ph-envelope-simple"></i></a>`);
     // coluna de contato (texto)
     const contact = [];
     if (c.email) contact.push(`<a href="mailto:${AH.escape(c.email)}"><i class="ph ph-envelope-simple"></i>${AH.escape(c.email)}</a>`);
-    if (c.whatsapp) contact.push(`<a href="${AH.escape(c.whatsapp)}" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo"></i>WhatsApp</a>`);
+    if (c.whatsapp) contact.push(`<a href="${AH.escape(waHref(c.whatsapp))}" target="_blank" rel="noopener"><i class="ph ph-whatsapp-logo"></i>WhatsApp</a>`);
     if (c.instagram) contact.push(`<a href="${AH.escape(c.instagram)}" target="_blank" rel="noopener"><i class="ph ph-instagram-logo"></i>Instagram</a>`);
     if (c.location) contact.push(`<span><i class="ph ph-map-pin"></i>${AH.escape(c.location)}</span>`);
     const el = document.getElementById('siteFooter'); if (!el) return;
     el.innerHTML = `<footer class="store-footer">
       <div class="store-footer__grid">
         <div class="stack gap-12" style="max-width:340px">
-          <a class="row gap-10" href="/" style="text-decoration:none;color:var(--text)"><div class="store-nav__logo" style="width:40px;height:40px"><img src="${logo}" alt=""></div><strong class="display" style="font-size:19px;letter-spacing:0.03em">${AH.escape(ws.name || 'AtléticaHub')}</strong></a>
+          <a class="row gap-10" href="/" style="text-decoration:none;color:var(--text)"><div class="store-nav__logo" style="width:40px;height:40px"><img src="${logo}" alt=""></div><strong class="display" style="font-size:19px;letter-spacing:0.03em">${AH.escape(ws.name || 'A.A.A.S.I. Cyber')}</strong></a>
           <span class="store-footer__about">${AH.escape(c.about || 'Ingressos, loja e plano de sócio da atlética num só lugar. Sócio paga menos em tudo.')}</span>
           ${soc.length ? `<div class="store-footer__soc">${soc.join('')}</div>` : ''}
         </div>
@@ -163,7 +172,7 @@ window.AH = window.AH || {};
         </div>
       </div>
       <div class="store-footer__bar">
-        <span>© ${new Date().getFullYear()} ${AH.escape(ws.name || 'Atlética')} · feito com AtléticaHub</span>
+        <span>© ${new Date().getFullYear()} ${AH.escape(ws.name || 'A.A.A.S.I. Cyber')} · feito com hyperatlética</span>
         <a href="/atletica/login"><i class="ph ph-lock-simple"></i> Painel da diretoria</a>
       </div>
     </footer>`;

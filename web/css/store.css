@@ -1,8 +1,10 @@
 /* ============================================================
-   AtléticaHub — vitrine pública (home, loja, eventos, sócio)
+   hyperatlética — vitrine pública (home, loja, eventos, sócio)
    ============================================================ */
 body { background:var(--surface-0); }
-.store { max-width:1760px; margin:0 auto; min-height:100vh; }
+.store { max-width:1760px; margin:0 auto; min-height:100vh; min-height:100dvh; display:flex; flex-direction:column; overflow-x:clip; }
+/* rodapé sempre colado na base, mesmo com pouca coisa (loja/eventos vazios) */
+.store > footer { margin-top:auto; }
 
 .store-nav { display:flex; align-items:center; gap:26px; padding:14px 32px; border-bottom:1px solid var(--border); background:rgba(10,13,19,0.9); position:sticky; top:0; z-index:30; backdrop-filter:blur(8px); }
 .store-nav__logo { width:38px; height:38px; border-radius:10px; background:var(--surface-sidebar); overflow:hidden; flex:none; }

@@ -30,7 +30,7 @@ export const accountRoutes = new Elysia({ prefix: "/account" })
       sendOrderEmail(acc.email, acc.name, {
         orderNumber: result.order.orderNumber, totalCents: result.order.totalCents,
         items: result.items.map((i) => ({ description: i.description, quantity: i.quantity, subtotalCents: i.subtotalCents })),
-      }, ws?.name || "AtléticaHub").catch(() => {});
+      }, ws?.name || "A.A.A.S.I. Cyber").catch(() => {});
     }
     return ok({ orderId: result.order.id, orderNumber: result.order.orderNumber, totalCents: result.order.totalCents }, "Pedido criado");
   }, {

@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gestão da atlética — AtléticaHub</title>
+<!-- ah-head -->
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/brasao-cyber.jpeg">
+<meta name="description" content="Área de gestão da atlética.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0d13">
+<title>Gestão — hyperatlética</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/vendor/phosphor/regular/style.css">
@@ -18,11 +24,31 @@
   .tabs button.on { background:var(--brand); color:#fff; }
   .urow { display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid var(--border); border-radius:12px; background:var(--surface-1); flex-wrap:wrap; }
   .urow select { background:var(--surface-0); border:1px solid var(--border-strong); border-radius:9px; padding:8px 10px; color:var(--text); font-family:inherit; font-size:13px; }
-  .mchk { display:flex; flex-wrap:wrap; gap:8px; }
-  .mchk label { display:flex; align-items:center; gap:7px; padding:7px 11px; border:1px solid var(--border-strong); border-radius:9px; font-size:13px; cursor:pointer; background:var(--surface-0); }
-  .mchk input { accent-color:var(--brand); width:15px; height:15px; }
-  .rolecard { border:1px solid var(--border); border-radius:14px; background:var(--surface-1); padding:16px; display:flex; flex-direction:column; gap:12px; }
-  .badge-mini { font-size:11px; padding:3px 8px; border-radius:6px; background:var(--tint-brand); color:var(--text-brand); }
+  /* Cargos — cards + chips de módulo (liga/desliga) */
+  .rolecard { border:1px solid var(--border); border-radius:16px; background:linear-gradient(180deg,var(--surface-1),rgba(13,17,23,.55)); padding:18px; display:flex; flex-direction:column; gap:14px; transition:border-color .15s; }
+  .rolecard:hover { border-color:var(--border-strong); }
+  .rolecard--new { border-style:dashed; background:transparent; }
+  .rolecard__head { display:flex; align-items:center; gap:12px; }
+  .role-ic { width:42px; height:42px; flex:none; border-radius:12px; display:grid; place-items:center; font-size:20px; color:var(--brand-accent); background:var(--tint-accent); border:1px solid #17456f; }
+  .role-ic--new { color:var(--text-dim); background:var(--surface-0); border:1px dashed var(--border-strong); }
+  .role-name { flex:1; min-width:0; background:var(--surface-0); border:1px solid var(--border-strong); border-radius:10px; padding:10px 13px; color:var(--text); font-family:var(--font-display); font-size:19px; letter-spacing:.02em; text-transform:uppercase; }
+  .role-name:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,119,255,.16); }
+  .role-name:disabled { opacity:1; border-color:transparent; background:transparent; padding-left:2px; }
+  .role-meta { flex:none; }
+  .role-count { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-muted); font-weight:600; white-space:nowrap; }
+  .badge-mini { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:5px 10px; border-radius:8px; background:var(--tint-success); color:var(--success-soft); white-space:nowrap; }
+  .rolecard__foot { display:flex; gap:8px; }
+  .mod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:9px; }
+  .mod-chip { display:flex; align-items:center; gap:9px; padding:11px 12px; border-radius:11px; border:1px solid var(--border-strong); background:var(--surface-0); color:var(--text-muted); cursor:pointer; font-family:inherit; font-size:13.5px; font-weight:600; transition:border-color .15s, background .15s, color .15s; }
+  .mod-chip i.mod-i { font-size:18px; color:var(--text-dim); flex:none; transition:color .15s; }
+  .mod-chip span { flex:1; text-align:left; }
+  .mod-chip:hover { border-color:var(--brand-accent); color:var(--text); }
+  .mod-chip.on { border-color:var(--brand); background:var(--tint-accent); color:#fff; }
+  .mod-chip.on i.mod-i { color:var(--brand-accent); }
+  .mod-chip .tick { width:19px; height:19px; flex:none; border-radius:6px; border:1.5px solid var(--border-strong); display:grid; place-items:center; color:transparent; font-size:12px; transition:.15s; }
+  .mod-chip.on .tick { background:var(--brand); border-color:var(--brand); color:#fff; }
+  .mod-chip.is-locked { cursor:default; }
+  .mod-chip.is-locked:hover { border-color:var(--brand); color:#fff; }
 </style>
 </head>
 <body>
@@ -49,6 +75,7 @@
 <script src="/js/api.js"></script>
 <script>
 const MODLABELS = { socios:'Sócios', planos:'Planos', cobrancas:'Cobranças', produtos:'Produtos', pedidos:'Pedidos & Retirada', eventos:'Eventos', financeiro:'Financeiro', loja:'Loja & Site' };
+const MODICON = { socios:'ph-users-three', planos:'ph-identification-badge', cobrancas:'ph-receipt', produtos:'ph-t-shirt', pedidos:'ph-shopping-bag', eventos:'ph-confetti', financeiro:'ph-chart-line-up', loja:'ph-storefront' };
 let MODULES = [], ROLES = [], USERS = [];
 const $ = id => document.getElementById(id);
 
@@ -103,33 +130,37 @@ async function toggleSuper(userId, val) {
 
 /* ---------- Cargos ---------- */
 function moduleChecks(selected, disabled) {
-  return `<div class="mchk">${MODULES.map(m => `<label><input type="checkbox" value="${m}" ${selected.includes(m) ? 'checked' : ''} ${disabled ? 'disabled' : ''}>${MODLABELS[m] || m}</label>`).join('')}</div>`;
+  return `<div class="mod-grid">${MODULES.map(m => `<button type="button" class="mod-chip${selected.includes(m) ? ' on' : ''}${disabled ? ' is-locked' : ''}" data-mod="${m}"><i class="ph ${MODICON[m] || 'ph-squares-four'} mod-i"></i><span>${MODLABELS[m] || m}</span><span class="tick"><i class="ph ph-check"></i></span></button>`).join('')}</div>`;
 }
 function renderRoles() {
   const cards = ROLES.map(r => `
     <div class="rolecard" data-card="${r.id}">
-      <div class="row gap-10" style="align-items:center">
-        <input class="grow" style="background:var(--surface-0);border:1px solid var(--border-strong);border-radius:9px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:15px;font-weight:600" value="${AH.escape(r.name)}" ${r.isSystem ? 'disabled' : ''} data-name="${r.id}">
-        ${r.isSystem ? '<span class="badge-mini">sistema · acesso total</span>' : ''}
-        <span class="dim" style="font-size:12px">${r.count} pessoa(s)</span>
+      <div class="rolecard__head">
+        <div class="role-ic"><i class="ph ph-identification-badge"></i></div>
+        <input class="role-name" value="${AH.escape(r.name)}" ${r.isSystem ? 'disabled' : ''} data-name="${r.id}" placeholder="Nome do cargo">
+        <div class="role-meta">${r.isSystem ? '<span class="badge-mini"><i class="ph ph-shield-check"></i> acesso total</span>' : `<span class="role-count"><i class="ph ph-users"></i> ${r.count} pessoa${r.count === 1 ? '' : 's'}</span>`}</div>
       </div>
       ${moduleChecks(r.modules, r.isSystem)}
-      ${r.isSystem ? '' : `<div class="row gap-8"><button class="btn btn--primary" style="font-size:12px;padding:8px 12px" data-save="${r.id}"><i class="ph ph-check"></i> Salvar</button><button class="btn" style="font-size:12px;padding:8px 12px;color:var(--danger-soft)" data-del="${r.id}"><i class="ph ph-trash"></i> Excluir</button></div>`}
+      ${r.isSystem ? '<span class="dim" style="font-size:12px;display:flex;align-items:center;gap:6px"><i class="ph ph-shield-check"></i> Cargo do sistema — acessa tudo, não editável.</span>' : `<div class="rolecard__foot"><button class="btn btn--primary" style="font-size:13px" data-save="${r.id}"><i class="ph ph-check"></i> Salvar</button><button class="btn del" style="font-size:13px" data-del="${r.id}"><i class="ph ph-trash"></i> Excluir</button></div>`}
     </div>`).join('');
 
-  const novo = `<div class="rolecard" style="border-style:dashed">
-    <span class="label-cap">Novo cargo</span>
-    <input id="newName" placeholder="Nome do cargo (ex.: Tesoureiro)" style="background:var(--surface-0);border:1px solid var(--border-strong);border-radius:9px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:15px">
+  const novo = `<div class="rolecard rolecard--new" data-card="new">
+    <div class="rolecard__head">
+      <div class="role-ic role-ic--new"><i class="ph ph-plus"></i></div>
+      <input id="newName" class="role-name" placeholder="Novo cargo — ex.: Tesoureiro">
+    </div>
+    <span class="dim" style="font-size:12.5px">Marque o que este cargo pode acessar:</span>
     ${moduleChecks([], false)}
-    <button class="btn btn--primary" style="font-size:13px;padding:9px 14px;align-self:flex-start" id="createRole"><i class="ph ph-plus"></i> Criar cargo</button>
+    <div class="rolecard__foot"><button class="btn btn--primary" style="font-size:13px" id="createRole"><i class="ph ph-plus"></i> Criar cargo</button></div>
   </div>`;
 
   $('tab-roles').innerHTML = cards + novo;
+  $('tab-roles').querySelectorAll('.mod-chip:not(.is-locked)').forEach(c => c.onclick = () => c.classList.toggle('on'));
   $('tab-roles').querySelectorAll('[data-save]').forEach(b => b.onclick = () => saveRole(b.dataset.save));
   $('tab-roles').querySelectorAll('[data-del]').forEach(b => b.onclick = () => delRole(b.dataset.del));
   $('createRole').onclick = createRole;
 }
-function cardModules(card) { return [...card.querySelectorAll('.mchk input:checked')].map(i => i.value); }
+function cardModules(card) { return [...card.querySelectorAll('.mod-chip.on')].map(c => c.dataset.mod); }
 async function saveRole(id) {
   const card = document.querySelector(`[data-card="${id}"]`);
   const name = card.querySelector(`[data-name="${id}"]`).value.trim();

@@ -58,7 +58,7 @@ function mercadopago(accessToken: string): PaymentProvider {
           transaction_amount: o.amountCents / 100,
           description: o.description,
           payment_method_id: "pix",
-          payer: { email: o.payerEmail || "comprador@atleticahub.app", first_name: o.payerName || "Comprador" },
+          payer: { email: o.payerEmail || "comprador@cyber.hyperdynamis.com", first_name: o.payerName || "Comprador" },
         }),
       });
       const j = await res.json();

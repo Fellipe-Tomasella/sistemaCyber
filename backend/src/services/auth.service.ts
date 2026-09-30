@@ -8,6 +8,7 @@ import { signAccess, type AccessClaims } from "../utils/jwt.ts";
 import { env } from "../config/env.ts";
 import { Errors } from "../utils/response.ts";
 import { today } from "../utils/dates.ts";
+import { verifyFirebaseIdToken } from "./firebase.ts";
 
 interface Ctx { userAgent?: string; ip?: string; }
 
@@ -94,13 +95,15 @@ export async function revokeRefresh(raw: string) {
 }
 
 /** Onboarding de nova atlética: cria workspace + gestão + primeiro admin. */
-export async function registerAtletica(input: { name: string; slug: string; university?: string; adminName: string; adminEmail: string; adminPassword: string }, ctx: Ctx) {
+export async function registerAtletica(input: { name: string; slug: string; university?: string; adminName: string; adminEmail: string; adminPassword: string; officialEmail?: string }, ctx: Ctx) {
   const slug = input.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
   if (slug.length < 2) throw Errors.BadRequest("Slug inválido");
   const exists = await db.query.workspaces.findFirst({ where: eq(workspaces.slug, slug) });
   if (exists) throw Errors.Conflict("Já existe atlética com esse slug");
 
-  const [ws] = await db.insert(workspaces).values({ name: input.name, slug, university: input.university }).returning();
+  // e-mail oficial da atlética = super-admin (quem cria vira o dono, se não informar outro)
+  const officialEmail = (input.officialEmail || input.adminEmail).trim().toLowerCase();
+  const [ws] = await db.insert(workspaces).values({ name: input.name, slug, university: input.university, officialEmail }).returning();
   const [term] = await db.insert(managementTerms).values({ workspaceId: ws.id, name: "Gestão atual", isCurrent: true, startDate: today() }).returning();
   const [dir] = await db.insert(directors).values({
     workspaceId: ws.id, termId: term.id, name: input.adminName, email: input.adminEmail, emailLookup: emailLookup(input.adminEmail),
@@ -209,7 +212,7 @@ export async function resendVerification(accountId: string) {
   const ws = await db.query.workspaces.findFirst({ where: eq(workspaces.id, acc.workspaceId) });
   const code = genCode();
   await db.update(accounts).set({ verifyCodeHash: sha256(code), verifyExpiresAt: new Date(Date.now() + 30 * 60_000) }).where(eq(accounts.id, acc.id));
-  await sendVerificationEmail(acc.email, acc.name, code, ws?.name || "AtléticaHub");
+  await sendVerificationEmail(acc.email, acc.name, code, ws?.name || "A.A.A.S.I. Cyber");
   return { sent: true };
 }
 
@@ -249,6 +252,41 @@ export async function loginAccount(email: string, password: string, slug: string
   if (!acc || !acc.active || !acc.passwordHash) throw Errors.Unauthorized("Credenciais inválidas");
   if (!(await verifyPassword(password, acc.passwordHash))) throw Errors.Unauthorized("Credenciais inválidas");
   await db.update(accounts).set({ lastLoginAt: new Date() }).where(eq(accounts.id, acc.id));
+  return sessionForAccount(acc, ws, ctx);
+}
+
+/** Login/cadastro com Google (Firebase): verifica o token e acha / vincula / cria a conta. */
+export async function loginWithGoogle(idToken: string, slug: string, ctx: Ctx) {
+  const ws = await db.query.workspaces.findFirst({ where: eq(workspaces.slug, slug) });
+  if (!ws) throw Errors.NotFound("Atlética não encontrada");
+  const g = await verifyFirebaseIdToken(idToken);
+  if (!g.email) throw Errors.BadRequest("Sua conta Google não tem e-mail");
+  const email = g.email.trim().toLowerCase();
+  const lookup = emailLookup(email);
+
+  // 1) já existe conta com esse Google → entra
+  let acc = await db.query.accounts.findFirst({ where: and(eq(accounts.workspaceId, ws.id), eq(accounts.googleSub, g.uid)) });
+  // 2) existe conta com esse e-mail (senha) → vincula o Google e entra
+  if (!acc) {
+    const byEmail = await db.query.accounts.findFirst({ where: and(eq(accounts.workspaceId, ws.id), eq(accounts.emailLookup, lookup)) });
+    if (byEmail) {
+      await db.update(accounts).set({ googleSub: g.uid, emailVerified: true, lastLoginAt: new Date() }).where(eq(accounts.id, byEmail.id));
+      acc = { ...byEmail, googleSub: g.uid, emailVerified: true };
+    }
+  }
+  // 3) não existe → cria (cadastro com Google; e-mail já verificado pelo Google)
+  if (!acc) {
+    const isSuper = !!ws.officialEmail && emailLookup(ws.officialEmail) === lookup;
+    const [created] = await db.insert(accounts).values({
+      workspaceId: ws.id, name: g.name || email.split("@")[0], email, emailLookup: lookup,
+      googleSub: g.uid, emailVerified: true, isSuperAdmin: isSuper, lastLoginAt: new Date(),
+    }).returning();
+    acc = created;
+  } else {
+    await db.update(accounts).set({ lastLoginAt: new Date() }).where(eq(accounts.id, acc.id));
+  }
+  if (!acc) throw Errors.BadRequest("Não foi possível entrar com o Google");
+  if (!acc.active) throw Errors.Unauthorized("Conta desativada");
   return sessionForAccount(acc, ws, ctx);
 }
 

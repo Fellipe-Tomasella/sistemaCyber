@@ -1,5 +1,5 @@
 /* ============================================================
-   AtléticaHub — cliente HTTP central + sessão
+   hyperatlética — cliente HTTP central + sessão
    ============================================================ */
 window.AH = window.AH || {};
 
@@ -141,6 +141,11 @@ AH.register = async function (fields) { // {slug,name,email,password,phone?}
 };
 AH.login = async function (email, password, slug) {
   const d = await AH.api.post("/auth/login", { email, password, slug }, { auth: false });
+  return AH.setAccountSession(d, slug);
+};
+/** Entrar/cadastrar com Google: manda o ID token do Firebase e guarda a sessão. */
+AH.loginWithGoogle = async function (idToken, slug) {
+  const d = await AH.api.post("/auth/google", { idToken, slug }, { auth: false });
   return AH.setAccountSession(d, slug);
 };
 /** Destrava o painel: valida PIN (com o token da CONTA) e guarda a elevação. */
